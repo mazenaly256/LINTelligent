@@ -1,4 +1,6 @@
 using LINTelligent.Data;
+using LINTelligent.Services.Implementations;
+using LINTelligent.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -9,6 +11,8 @@ string dbConnectionString = builder.Configuration.GetConnectionString("Default")
     ?? throw new KeyNotFoundException("Database connection string is not found.");
 
 builder.Services.AddDbContext<AppDbContext>(options => options.UseNpgsql(dbConnectionString));
+
+builder.Services.AddScoped<ILLMClient, OllamaClient>();
 
 builder.Services.AddOpenApi();
 

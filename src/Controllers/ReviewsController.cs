@@ -1,0 +1,70 @@
+﻿using LINTelligent.Data;
+using LINTelligent.DTOs.Request;
+using LINTelligent.DTOs.Response;
+using LINTelligent.Entities;
+using LINTelligent.Services.Interfaces;
+using Microsoft.AspNetCore.Mvc;
+using System.Text.Json;
+
+namespace LINTelligent.Controllers;
+
+[ApiController]
+[Route("/reviews")]
+public class ReviewsController(AppDbContext context, ILLMClient llmClient) : ControllerBase
+{
+    [HttpPost]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [EndpointName("Request a code review.")]
+    [EndpointDescription("Lints the code snippet and give a review about it.")]
+    public async Task<ActionResult<Review>> ReviewCodeSnippetAsync(CodeReviewRequest codeReviewRequest, CancellationToken ct)
+    {
+        if (codeReviewRequest.CodeSnippet.Length > 500)
+        {
+            return BadRequest("Code snippet exceeds the maximum number of allowed characters. Max allowed: 500.");
+        }
+
+        var reportFromLLM = llmClient.GetCodeReview(codeReviewRequest.Language, codeReviewRequest.CodeSnippet);
+
+        Review fullCodeReview = new()
+        {
+            Language = codeReviewRequest.Language,
+            Status = "Completed",
+            Report = reportFromLLM,
+            CodeSnippet = codeReviewRequest.CodeSnippet
+        };
+
+        await context.Reviews.AddAsync(fullCodeReview, ct);
+        await context.SaveChangesAsync();
+
+        return Ok(fullCodeReview);
+    }
+
+
+    [HttpGet("{reviewId:guid}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [EndpointName("Get code review result by ReviewID")]
+    [EndpointDescription("Get the report of the code snippet review")]
+    public async Task<ActionResult<CodeReviewResponse>> GetReviewByIdAsync(Guid reviewId, CancellationToken ct)
+    {
+        var reviewFromDB = await context.Reviews.FindAsync(reviewId, ct);
+
+        if (reviewFromDB is null)
+        {
+            return NotFound(new ProblemDetails
+            {
+                Title = "Review is not found.",
+                Detail = $"Review with ID: {reviewId} is not found, check the ID and try again."
+            });
+        }
+
+        CodeReviewResponse reviewDto = new()
+        {
+            Status = reviewFromDB.Status,
+            Issues = JsonSerializer.Deserialize<List<CodeIssue>>(reviewFromDB.Report!)
+        };
+
+        return Ok(reviewDto);
+    }
+}
