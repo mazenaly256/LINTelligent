@@ -12,6 +12,8 @@ string dbConnectionString = builder.Configuration.GetConnectionString("Default")
 
 builder.Services.AddDbContext<AppDbContext>(options => options.UseNpgsql(dbConnectionString));
 
+builder.Services.AddHttpClient();
+
 builder.Services.AddScoped<ILLMClient, OllamaClient>();
 
 builder.Services.AddOpenApi();

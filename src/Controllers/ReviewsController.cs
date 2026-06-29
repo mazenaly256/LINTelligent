@@ -21,23 +21,36 @@ public class ReviewsController(AppDbContext context, ILLMClient llmClient) : Con
     {
         if (codeReviewRequest.CodeSnippet.Length > 500)
         {
-            return BadRequest("Code snippet exceeds the maximum number of allowed characters. Max allowed: 500.");
+            return BadRequest(new ProblemDetails
+            {
+                Title = "Long code snippet.",
+                Detail = "Code snippet exceeds the maximum number of allowed characters. Max allowed: 500."
+            });
         }
 
-        var reportFromLLM = llmClient.GetCodeReview(codeReviewRequest.Language, codeReviewRequest.CodeSnippet);
+        var llmReviewResponse = await llmClient.GetCodeReviewReportAsync(codeReviewRequest.Language, codeReviewRequest.CodeSnippet, ct);
 
         Review fullCodeReview = new()
         {
             Language = codeReviewRequest.Language,
-            Status = "Completed",
-            Report = reportFromLLM,
+            Status = llmReviewResponse.Status,
+            Report = llmReviewResponse.Report,
             CodeSnippet = codeReviewRequest.CodeSnippet
         };
 
         await context.Reviews.AddAsync(fullCodeReview, ct);
         await context.SaveChangesAsync();
 
-        return Ok(fullCodeReview);
+        CodeReviewResponse reviewDto = new()
+        {
+            ReviewId = fullCodeReview.Id,
+            Status = fullCodeReview.Status,
+            Language = fullCodeReview.Language,
+            CodeSnippet = fullCodeReview.CodeSnippet,
+            Issues = JsonSerializer.Deserialize<List<CodeIssue>>(fullCodeReview.Report!)
+        };
+
+        return Ok(reviewDto);
     }
 
 
@@ -61,6 +74,7 @@ public class ReviewsController(AppDbContext context, ILLMClient llmClient) : Con
 
         CodeReviewResponse reviewDto = new()
         {
+            ReviewId = reviewFromDB.Id,
             Status = reviewFromDB.Status,
             Issues = JsonSerializer.Deserialize<List<CodeIssue>>(reviewFromDB.Report!)
         };
