@@ -1,4 +1,4 @@
-using LINTelligent.Data;
+using LINTelligent.Infrastructure.Data;
 using LINTelligent.Services.Implementations;
 using LINTelligent.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;

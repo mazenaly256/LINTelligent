@@ -1,7 +1,7 @@
 ﻿using LINTelligent.Entities;
 using Microsoft.EntityFrameworkCore;
 
-namespace LINTelligent.Data;
+namespace LINTelligent.Infrastructure.Persistence;
 
 public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options)
 {
