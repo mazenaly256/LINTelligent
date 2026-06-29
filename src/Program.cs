@@ -20,6 +20,8 @@ var app = builder.Build();
 
 app.MapOpenApi();
 
+app.UseSwaggerUI(options => options.SwaggerEndpoint("/openapi/v1.json", "LINTelligent"));
+
 app.MapControllers();
 
 app.Run();
