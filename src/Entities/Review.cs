@@ -11,4 +11,6 @@ public class Review
     public string Status { get; set; } = null!;
 
     public string? Report { get; set; }
+
+    public string? WebhookUrl { get; set; }
 }

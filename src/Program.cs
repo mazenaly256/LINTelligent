@@ -1,4 +1,6 @@
-using LINTelligent.Data;
+using Hangfire;
+using Hangfire.PostgreSql;
+using LINTelligent.Infrastructure.Persistence;
 using LINTelligent.Services.Implementations;
 using LINTelligent.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -18,6 +20,15 @@ builder.Services.AddScoped<ILLMClient, OllamaClient>();
 
 builder.Services.AddOpenApi();
 
+builder.Services.AddHangfire(config =>
+{
+    config.SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+    .UseSimpleAssemblyNameTypeSerializer()
+    .UseRecommendedSerializerSettings()
+    .UsePostgreSqlStorage(options => options.UseNpgsqlConnection(dbConnectionString));
+});
+builder.Services.AddHangfireServer();
+
 var app = builder.Build();
 
 app.MapOpenApi();
@@ -25,5 +36,7 @@ app.MapOpenApi();
 app.UseSwaggerUI(options => options.SwaggerEndpoint("/openapi/v1.json", "LINTelligent"));
 
 app.MapControllers();
+
+app.UseHangfireDashboard("/hangfire");
 
 app.Run();
