@@ -33,7 +33,8 @@ public class ReviewsController(AppDbContext context, ILLMClient llmClient) : Con
         {
             Language = codeReviewRequest.Language,
             Status = "Pending",
-            CodeSnippet = codeReviewRequest.CodeSnippet
+            CodeSnippet = codeReviewRequest.CodeSnippet,
+            WebhookUrl = codeReviewRequest.WebhookUrl
         };
 
         await context.Reviews.AddAsync(pendingReview, ct);

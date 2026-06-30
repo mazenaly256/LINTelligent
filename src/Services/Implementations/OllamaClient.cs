@@ -6,6 +6,7 @@ using LINTelligent.Infrastructure.Persistence;
 using LINTelligent.Services.Interfaces;
 using Microsoft.EntityFrameworkCore.Query;
 using System.Net.Http.Headers;
+using System.Text.Json;
 
 namespace LINTelligent.Services.Implementations;
 
@@ -59,6 +60,29 @@ public class OllamaClient : ILLMClient
             review.Status = ollamaResponse!.Done ? "Completed" : "Failed";
             review.Report = ollamaResponse.Message.Content;
             await _context.SaveChangesAsync(ct);
+
+            if (review.Status == "Completed" && !string.IsNullOrWhiteSpace(review.WebhookUrl))
+            {
+                CodeReviewResponse reviewDto = new()
+                {
+                    ReviewId = review.Id,
+                    Language = review.Language,
+                    CodeSnippet = review.CodeSnippet,
+                    Status = review.Status,
+                    Issues = string.IsNullOrWhiteSpace(review.Report) ? null : JsonSerializer.Deserialize<List<CodeIssue>>(review.Report)
+                };
+
+                try
+                {
+                    var notification = await _httpClient.PostAsJsonAsync(review.WebhookUrl, review, ct);
+                    notification.EnsureSuccessStatusCode();
+                }
+
+                catch
+                {
+
+                }
+            }
         }
 
         catch
