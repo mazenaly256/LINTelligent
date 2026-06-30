@@ -4,5 +4,5 @@ namespace LINTelligent.Services.Interfaces;
 
 public interface ILLMClient
 {
-    public Task<Review> GetCodeReviewReportAsync(string language, string codeSnippet, CancellationToken ct);
+    public Task GetCodeReviewReportAsync(Guid pendingReviewId, string language, string codeSnippet, CancellationToken ct);
 }

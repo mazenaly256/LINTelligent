@@ -1,4 +1,5 @@
-﻿using LINTelligent.DTOs.Request;
+﻿using Hangfire;
+using LINTelligent.DTOs.Request;
 using LINTelligent.DTOs.Response;
 using LINTelligent.Entities;
 using LINTelligent.Infrastructure.Persistence;
@@ -13,7 +14,7 @@ namespace LINTelligent.Controllers;
 public class ReviewsController(AppDbContext context, ILLMClient llmClient) : ControllerBase
 {
     [HttpPost]
-    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status202Accepted)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [EndpointName("Request a code review.")]
     [EndpointDescription("Lints the code snippet and give a review about it.")]
@@ -28,29 +29,21 @@ public class ReviewsController(AppDbContext context, ILLMClient llmClient) : Con
             });
         }
 
-        var llmReviewResponse = await llmClient.GetCodeReviewReportAsync(codeReviewRequest.Language, codeReviewRequest.CodeSnippet, ct);
-
-        Review fullCodeReview = new()
+        Review pendingReview = new()
         {
             Language = codeReviewRequest.Language,
-            Status = llmReviewResponse.Status,
-            Report = llmReviewResponse.Report,
+            Status = "Pending",
             CodeSnippet = codeReviewRequest.CodeSnippet
         };
 
-        await context.Reviews.AddAsync(fullCodeReview, ct);
-        await context.SaveChangesAsync();
+        await context.Reviews.AddAsync(pendingReview, ct);
+        await context.SaveChangesAsync(ct);
 
-        CodeReviewResponse reviewDto = new()
-        {
-            ReviewId = fullCodeReview.Id,
-            Status = fullCodeReview.Status,
-            Language = fullCodeReview.Language,
-            CodeSnippet = fullCodeReview.CodeSnippet,
-            Issues = JsonSerializer.Deserialize<List<CodeIssue>>(fullCodeReview.Report!)
-        };
+        // Once the endpoint call finishes, the framework marks the cancellation token so any thread that uses it will be a canceled operation and when the token is used again when the worker executes the job, it will directly throw OperationCanceledException
+        // So that, never send the cancellation token to the be saved as a parameter for an async job.
+        BackgroundJob.Enqueue((ILLMClient llmClient) => llmClient.GetCodeReviewReportAsync(pendingReview.Id, codeReviewRequest.Language, codeReviewRequest.CodeSnippet, CancellationToken.None));
 
-        return Ok(reviewDto);
+        return Accepted($"/reviews/{pendingReview.Id}");
     }
 
 
@@ -75,8 +68,10 @@ public class ReviewsController(AppDbContext context, ILLMClient llmClient) : Con
         CodeReviewResponse reviewDto = new()
         {
             ReviewId = reviewFromDB.Id,
+            Language = reviewFromDB.Language,
+            CodeSnippet = reviewFromDB.CodeSnippet,
             Status = reviewFromDB.Status,
-            Issues = JsonSerializer.Deserialize<List<CodeIssue>>(reviewFromDB.Report!)
+            Issues = reviewFromDB.Report is null ? null : JsonSerializer.Deserialize<List<CodeIssue>>(reviewFromDB.Report)
         };
 
         return Ok(reviewDto);
