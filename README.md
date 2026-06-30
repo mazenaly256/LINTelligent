@@ -6,12 +6,12 @@ _AI-integrated backend service for code linting (ie. analyzing code for issues).
 
 ## Overview
 
-When a _linting request_ reaches the system, LINTelligent service persists its data in the database then enqueues a background job for handling reqeust in a _job queue_ then immediately returns **202 Accepted** response to the client.
+When a _linting request_ reaches the system, LINTelligent service saves its details in the database then enqueues a background job for handling the request in a _job queue_ then immediately returns **202 Accepted** response to the client.
 
-After that, a worker picks up the job from the job queue and process it, it calls the configured LLM provider, and persists the structured LLM response (review result) to database with the initially saved record (that was before returning 202 Accepted result).
+After that, a worker picks up the job from the job queue and processes it, it calls the configured LLM provider with the request details, then updates the review record with the structured LLM response (review result).
 
 Once the review result is saved, the service notifies the client _by sending the completed review to their registered webhook URL_.
 
-#### Basic system architecure diagram
+#### Basic system architecture diagram
 
 ![System Architecture Diagram](docs/system-architecture-diagram.png)
