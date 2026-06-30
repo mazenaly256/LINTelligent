@@ -1,7 +1,7 @@
 ﻿using LINTelligent.DTOs.Request;
 using LINTelligent.DTOs.Response;
 using LINTelligent.Entities;
-using LINTelligent.Infrastructure.Data;
+using LINTelligent.Infrastructure.Persistence;
 using LINTelligent.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
