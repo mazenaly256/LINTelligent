@@ -1,4 +1,5 @@
-﻿using LINTelligent.DTOs.Response;
+﻿using Hangfire;
+using LINTelligent.DTOs.Response;
 using LINTelligent.Entities;
 using LINTelligent.Infrastructure.AI.Ollama;
 using LINTelligent.Infrastructure.Persistence;
@@ -64,7 +65,7 @@ public class OllamaClient : ILLMClient
         {
             review.Status = "Failed";
             await _context.SaveChangesAsync(ct);
-            throw;
+            throw;      // to apply automatic retry for the action/method.
         }
     }
 }
