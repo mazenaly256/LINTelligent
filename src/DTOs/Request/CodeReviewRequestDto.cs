@@ -1,6 +1,6 @@
 ﻿namespace LINTelligent.DTOs.Request;
 
-public class CodeReviewRequest
+public class CodeReviewRequestDto
 {
     public string CodeSnippet { get; set; } = null!;
 

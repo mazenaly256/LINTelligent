@@ -2,7 +2,7 @@
 
 namespace LINTelligent.DTOs.Response;
 
-public class CodeIssue
+public class CodeIssueDto
 {
     [JsonPropertyName("lineNumber")]
     public int? LineNumber { get; set; }

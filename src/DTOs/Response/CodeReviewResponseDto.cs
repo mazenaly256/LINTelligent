@@ -2,7 +2,7 @@
 
 namespace LINTelligent.DTOs.Response;
 
-public class CodeReviewResponse
+public class CodeReviewResponseDto
 {
     public Guid ReviewId { get; set; }
 
@@ -12,5 +12,5 @@ public class CodeReviewResponse
 
     public string  Status { get; set; }
 
-    public List<CodeIssue>? Issues { get; set; }
+    public List<CodeIssueDto>? Issues { get; set; }
 }

@@ -63,13 +63,13 @@ public class OllamaClient : ILLMClient
 
             if (review.Status == "Completed" && !string.IsNullOrWhiteSpace(review.WebhookUrl))
             {
-                CodeReviewResponse reviewDto = new()
+                CodeReviewResponseDto reviewDto = new()
                 {
                     ReviewId = review.Id,
                     Language = review.Language,
                     CodeSnippet = review.CodeSnippet,
                     Status = review.Status,
-                    Issues = string.IsNullOrWhiteSpace(review.Report) ? null : JsonSerializer.Deserialize<List<CodeIssue>>(review.Report)
+                    Issues = string.IsNullOrWhiteSpace(review.Report) ? null : JsonSerializer.Deserialize<List<CodeIssueDto>>(review.Report)
                 };
 
                 try

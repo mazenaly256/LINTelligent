@@ -18,7 +18,7 @@ public class ReviewsController(AppDbContext context, ILLMClient llmClient) : Con
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [EndpointName("Request a code review.")]
     [EndpointDescription("Lints the code snippet and give a review about it.")]
-    public async Task<ActionResult<Review>> ReviewCodeSnippetAsync(CodeReviewRequest codeReviewRequest, CancellationToken ct)
+    public async Task<ActionResult<Review>> ReviewCodeSnippetAsync(CodeReviewRequestDto codeReviewRequest, CancellationToken ct)
     {
         if (codeReviewRequest.CodeSnippet.Length > 500)
         {
@@ -53,7 +53,7 @@ public class ReviewsController(AppDbContext context, ILLMClient llmClient) : Con
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [EndpointName("Get code review result by ReviewID")]
     [EndpointDescription("Get the report of the code snippet review")]
-    public async Task<ActionResult<CodeReviewResponse>> GetReviewByIdAsync(Guid reviewId, CancellationToken ct)
+    public async Task<ActionResult<CodeReviewResponseDto>> GetReviewByIdAsync(Guid reviewId, CancellationToken ct)
     {
         var reviewFromDB = await context.Reviews.FindAsync(reviewId, ct);
 
@@ -66,13 +66,13 @@ public class ReviewsController(AppDbContext context, ILLMClient llmClient) : Con
             });
         }
 
-        CodeReviewResponse reviewDto = new()
+        CodeReviewResponseDto reviewDto = new()
         {
             ReviewId = reviewFromDB.Id,
             Language = reviewFromDB.Language,
             CodeSnippet = reviewFromDB.CodeSnippet,
             Status = reviewFromDB.Status,
-            Issues = reviewFromDB.Report is null ? null : JsonSerializer.Deserialize<List<CodeIssue>>(reviewFromDB.Report)
+            Issues = reviewFromDB.Report is null ? null : JsonSerializer.Deserialize<List<CodeIssueDto>>(reviewFromDB.Report)
         };
 
         return Ok(reviewDto);
