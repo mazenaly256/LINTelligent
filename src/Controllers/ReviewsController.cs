@@ -11,7 +11,7 @@ namespace LINTelligent.Controllers;
 
 [ApiController]
 [Route("/reviews")]
-public class ReviewsController(AppDbContext context, ILLMClient llmClient) : ControllerBase
+public class ReviewsController(AppDbContext context) : ControllerBase
 {
     [HttpPost]
     [ProducesResponseType(StatusCodes.Status202Accepted)]
@@ -65,16 +65,8 @@ public class ReviewsController(AppDbContext context, ILLMClient llmClient) : Con
                 Detail = $"Review with ID: {reviewId} is not found, check the ID and try again."
             });
         }
-
-        CodeReviewResponseDto reviewDto = new()
-        {
-            ReviewId = reviewFromDB.Id,
-            Language = reviewFromDB.Language,
-            CodeSnippet = reviewFromDB.CodeSnippet,
-            Status = reviewFromDB.Status,
-            Issues = reviewFromDB.Report is null ? null : JsonSerializer.Deserialize<List<CodeIssueDto>>(reviewFromDB.Report)
-        };
-
+        var reviewDto = CodeReviewResponseDto.FromModel(reviewFromDB);
+       
         return Ok(reviewDto);
     }
 }
