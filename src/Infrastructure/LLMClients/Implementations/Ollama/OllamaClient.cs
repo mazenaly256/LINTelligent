@@ -1,14 +1,13 @@
 ﻿using Hangfire;
 using LINTelligent.DTOs.Response;
-using LINTelligent.Entities;
-using LINTelligent.Infrastructure.AI.Ollama;
+using LINTelligent.Infrastructure.LLMClients.Implementations.Ollama.DTOs;
+using LINTelligent.Infrastructure.LLMClients.Interfaces;
 using LINTelligent.Infrastructure.Persistence;
-using LINTelligent.Services.Interfaces;
 using Microsoft.EntityFrameworkCore.Query;
 using System.Net.Http.Headers;
 using System.Text.Json;
 
-namespace LINTelligent.Services.Implementations;
+namespace LINTelligent.Infrastructure.LLMClients.Implementations.Ollama;
 
 public class OllamaClient : ILLMClient
 {

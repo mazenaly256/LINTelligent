@@ -1,6 +1,6 @@
 ﻿using Hangfire;
 
-namespace LINTelligent.Services.Interfaces;
+namespace LINTelligent.Infrastructure.LLMClients.Interfaces;
 
 public interface ILLMClient
 {
