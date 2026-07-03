@@ -1,12 +1,12 @@
 ﻿using Hangfire;
-using LINTelligent.DTOs.Request;
-using LINTelligent.DTOs.Response;
-using LINTelligent.Entities;
+using LINTelligent.Domain;
 using LINTelligent.Infrastructure.LLMClients.Interfaces;
 using LINTelligent.Infrastructure.Persistence;
+using LINTelligent.Presentation.DTOs.Request;
+using LINTelligent.Presentation.DTOs.Response;
 using Microsoft.AspNetCore.Mvc;
 
-namespace LINTelligent.Controllers;
+namespace LINTelligent.Presentation.Controllers;
 
 [ApiController]
 [Route("/reviews")]

@@ -1,4 +1,4 @@
-﻿using LINTelligent.Entities;
+﻿using LINTelligent.Domain;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 

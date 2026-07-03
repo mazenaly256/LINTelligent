@@ -1,9 +1,7 @@
-﻿using LINTelligent.Entities;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging.Abstractions;
+﻿using LINTelligent.Domain;
 using System.Text.Json;
 
-namespace LINTelligent.DTOs.Response;
+namespace LINTelligent.Presentation.DTOs.Response;
 
 public class CodeReviewResponseDto
 {

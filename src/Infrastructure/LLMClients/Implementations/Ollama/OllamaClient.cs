@@ -1,8 +1,8 @@
 ﻿using Hangfire;
-using LINTelligent.DTOs.Response;
 using LINTelligent.Infrastructure.LLMClients.Implementations.Ollama.DTOs;
 using LINTelligent.Infrastructure.LLMClients.Interfaces;
 using LINTelligent.Infrastructure.Persistence;
+using LINTelligent.Presentation.DTOs.Response;
 using Microsoft.EntityFrameworkCore.Query;
 using System.Net.Http.Headers;
 using System.Text.Json;

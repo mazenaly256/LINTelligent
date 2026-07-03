@@ -1,4 +1,4 @@
-﻿using LINTelligent.Entities;
+﻿using LINTelligent.Domain;
 
 namespace LINTelligent.Infrastructure.Persistence.Repositories.Interfaces;
 
