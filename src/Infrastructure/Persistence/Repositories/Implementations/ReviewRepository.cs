@@ -13,7 +13,7 @@ public class ReviewRepository(AppDbContext context) : IReviewRepository
         return review.Id;
     }
 
-    public async Task AddReportToTheReviewAsync(Guid reviewId, bool done, string report, CancellationToken ct)
+    public async Task AddReportToTheReviewAsync(Guid reviewId, string report, CancellationToken ct)
     {
         var reviewFromDB = await this.GetReviewByIdAsync(reviewId, ct);
 
@@ -22,7 +22,6 @@ public class ReviewRepository(AppDbContext context) : IReviewRepository
             throw new KeyNotFoundException($"Review with ID: {reviewId} is not found.");
         }
 
-        reviewFromDB!.Status = done ? "Completed" : "Failed";
         reviewFromDB.Report = report;
 
         await context.SaveChangesAsync(ct);

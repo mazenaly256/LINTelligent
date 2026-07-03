@@ -1,6 +1,6 @@
 ﻿using Hangfire;
 using LINTelligent.Application.DTOs;
-using LINTelligent.Application.Interfaces;
+using LINTelligent.Application.Services.Interfaces;
 using LINTelligent.Domain;
 using LINTelligent.Infrastructure.LLMClients.Interfaces;
 using LINTelligent.Infrastructure.Persistence;
