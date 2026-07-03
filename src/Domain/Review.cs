@@ -1,4 +1,4 @@
-﻿namespace LINTelligent.Entities;
+﻿namespace LINTelligent.Domain;
 
 public class Review
 {

@@ -1,4 +1,4 @@
-﻿using LINTelligent.Entities;
+﻿using LINTelligent.Domain;
 using Microsoft.EntityFrameworkCore;
 
 namespace LINTelligent.Infrastructure.Persistence;

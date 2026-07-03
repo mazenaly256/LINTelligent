@@ -1,6 +1,6 @@
-﻿namespace LINTelligent.DTOs.Request;
+﻿namespace LINTelligent.Application.DTOs;
 
-public class CodeReviewRequest
+public class NewReviewRequest       // DTO to communicate with Presentation layer
 {
     public string CodeSnippet { get; set; } = null!;
 

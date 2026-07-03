@@ -1,8 +1,8 @@
 using Hangfire;
 using Hangfire.PostgreSql;
+using LINTelligent.Infrastructure.LLMClients.Implementations.Ollama;
+using LINTelligent.Infrastructure.LLMClients.Interfaces;
 using LINTelligent.Infrastructure.Persistence;
-using LINTelligent.Services.Implementations;
-using LINTelligent.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);

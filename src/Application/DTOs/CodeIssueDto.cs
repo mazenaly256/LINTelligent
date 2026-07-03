@@ -1,8 +1,8 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace LINTelligent.DTOs.Response;
+namespace LINTelligent.Application.DTOs;
 
-public class CodeIssue
+public class CodeIssueDto
 {
     [JsonPropertyName("lineNumber")]
     public int? LineNumber { get; set; }
