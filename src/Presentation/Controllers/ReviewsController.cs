@@ -37,7 +37,7 @@ public class ReviewsController(IReviewService reviewService) : ControllerBase
             WebhookUrl = codeReviewRequest.WebhookUrl
         };
 
-        var newReviewId = reviewService.SubmitReviewRequestAsync(newReviewRequest, ct);
+        var newReviewId = await reviewService.SubmitReviewRequestAsync(newReviewRequest, ct);
        
         return Accepted($"/reviews/{newReviewId}");
     }
