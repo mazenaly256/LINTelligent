@@ -1,4 +1,6 @@
 ﻿using Hangfire;
+using LINTelligent.Application.DTOs;
+using LINTelligent.Application.Interfaces;
 using LINTelligent.Domain;
 using LINTelligent.Infrastructure.LLMClients.Interfaces;
 using LINTelligent.Infrastructure.Persistence;
@@ -10,7 +12,7 @@ namespace LINTelligent.Presentation.Controllers;
 
 [ApiController]
 [Route("/reviews")]
-public class ReviewsController(AppDbContext context) : ControllerBase
+public class ReviewsController(IReviewService reviewService) : ControllerBase
 {
     [HttpPost]
     [ProducesResponseType(StatusCodes.Status202Accepted)]
@@ -28,22 +30,16 @@ public class ReviewsController(AppDbContext context) : ControllerBase
             });
         }
 
-        Review pendingReview = new()
+        NewReviewRequest newReviewRequest = new()
         {
             Language = codeReviewRequest.Language,
-            Status = "Pending",
             CodeSnippet = codeReviewRequest.CodeSnippet,
             WebhookUrl = codeReviewRequest.WebhookUrl
         };
 
-        await context.Reviews.AddAsync(pendingReview, ct);
-        await context.SaveChangesAsync(ct);
-
-        // Once the endpoint call finishes, the framework marks the cancellation token so any thread that uses it will be a canceled operation and when the token is used again when the worker executes the job, it will directly throw OperationCanceledException
-        // So that, never send the cancellation token to the be saved as a parameter for an async job.
-        BackgroundJob.Enqueue((ILLMClient llmClient) => llmClient.GetCodeReviewReportAsync(pendingReview.Id, codeReviewRequest.Language, codeReviewRequest.CodeSnippet, CancellationToken.None));
-
-        return Accepted($"/reviews/{pendingReview.Id}");
+        var newReviewId = reviewService.SubmitReviewRequestAsync(newReviewRequest, ct);
+       
+        return Accepted($"/reviews/{newReviewId}");
     }
 
 
@@ -54,7 +50,7 @@ public class ReviewsController(AppDbContext context) : ControllerBase
     [EndpointDescription("Get the report of the code snippet review")]
     public async Task<ActionResult<CodeReviewResponseDto>> GetReviewByIdAsync(Guid reviewId, CancellationToken ct)
     {
-        var reviewFromDB = await context.Reviews.FindAsync(reviewId, ct);
+        var reviewFromDB = await reviewService.GetReviewDetailsAsync(reviewId, ct);
 
         if (reviewFromDB is null)
         {

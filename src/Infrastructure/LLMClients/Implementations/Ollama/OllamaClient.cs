@@ -2,6 +2,7 @@
 using LINTelligent.Infrastructure.LLMClients.Implementations.Ollama.DTOs;
 using LINTelligent.Infrastructure.LLMClients.Interfaces;
 using LINTelligent.Infrastructure.Persistence;
+using LINTelligent.Infrastructure.Persistence.Repositories.Interfaces;
 using LINTelligent.Presentation.DTOs.Response;
 using Microsoft.EntityFrameworkCore.Query;
 using System.Net.Http.Headers;
@@ -13,13 +14,13 @@ public class OllamaClient : ILLMClient
 {
     private readonly string _apiKey;
     private readonly string _systemPrompt;
-    private readonly AppDbContext _context;
     private readonly HttpClient _httpClient;
+    private readonly IReviewRepository _reviewRepository;
 
 
-    public OllamaClient(AppDbContext context, IConfiguration configuration, IHttpClientFactory httpClientFactory)
+    public OllamaClient(IReviewRepository reviewRepository, IConfiguration configuration, IHttpClientFactory httpClientFactory)
     {
-        _context = context;
+        _reviewRepository = reviewRepository;
 
         _apiKey = configuration["LLM:API_KEY"]
             ?? throw new KeyNotFoundException("LLM API key is not found.");
@@ -35,9 +36,8 @@ public class OllamaClient : ILLMClient
 
     public async Task GetCodeReviewReportAsync(Guid pendingReviewId, string language, string codeSnippet, CancellationToken ct)
     {
-        var review = await _context.Reviews.FindAsync(pendingReviewId, ct);
-        review.Status = "Processing";
-        await _context.SaveChangesAsync(ct);
+        await _reviewRepository.ChangeStatusAsync(pendingReviewId, "Processing", ct);
+        var review = await _reviewRepository.GetReviewByIdAsync(pendingReviewId, ct);
 
         var ollamaRequest = new OllamaRequest       // One prompt, two sections identifying the Persona/Role and Task
         {
@@ -56,9 +56,7 @@ public class OllamaClient : ILLMClient
             httpResponse.EnsureSuccessStatusCode();
             var ollamaResponse = await httpResponse.Content.ReadFromJsonAsync<OllamaResponse>(ct);
 
-            review.Status = ollamaResponse!.Done ? "Completed" : "Failed";
-            review.Report = ollamaResponse.Message.Content;
-            await _context.SaveChangesAsync(ct);
+            await _reviewRepository.AddReportToTheReviewAsync(pendingReviewId, ollamaResponse!.Done, ollamaResponse.Message.Content, ct);
 
             if (review.Status == "Completed" && !string.IsNullOrWhiteSpace(review.WebhookUrl))
             {
@@ -79,8 +77,7 @@ public class OllamaClient : ILLMClient
 
         catch
         {
-            review.Status = "Failed";
-            await _context.SaveChangesAsync(ct);
+            await _reviewRepository.ChangeStatusAsync(pendingReviewId, "Failed", ct);
             throw;      // to apply automatic retry for the action/method.
         }
     }

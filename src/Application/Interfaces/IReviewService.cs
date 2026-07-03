@@ -5,7 +5,7 @@ namespace LINTelligent.Application.Interfaces;
 
 public interface IReviewService
 {
-    public Guid SubmitReviewRequest(NewReviewRequest reviewRequest);
+    public Task<Guid> SubmitReviewRequestAsync(NewReviewRequest reviewRequest, CancellationToken ct);
 
-    public Review? GetReviewDetails();
+    public Task<Review?> GetReviewDetailsAsync(Guid reviewId, CancellationToken ct);
 }
