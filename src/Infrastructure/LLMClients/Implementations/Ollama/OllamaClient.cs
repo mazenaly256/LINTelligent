@@ -1,4 +1,6 @@
 ﻿using Hangfire;
+using LINTelligent.Application.DTOs;
+using LINTelligent.Application.Interfaces;
 using LINTelligent.Infrastructure.LLMClients.Implementations.Ollama.DTOs;
 using LINTelligent.Infrastructure.LLMClients.Interfaces;
 using LINTelligent.Infrastructure.Persistence;
@@ -16,11 +18,14 @@ public class OllamaClient : ILLMClient
     private readonly string _systemPrompt;
     private readonly HttpClient _httpClient;
     private readonly IReviewRepository _reviewRepository;
+    private readonly INotificationService _notificationService;
 
 
-    public OllamaClient(IReviewRepository reviewRepository, IConfiguration configuration, IHttpClientFactory httpClientFactory)
+    public OllamaClient(IReviewRepository reviewRepository, INotificationService notificationService, IConfiguration configuration, IHttpClientFactory httpClientFactory)
     {
         _reviewRepository = reviewRepository;
+
+        _notificationService = notificationService;
 
         _apiKey = configuration["LLM:API_KEY"]
             ?? throw new KeyNotFoundException("LLM API key is not found.");
@@ -37,7 +42,6 @@ public class OllamaClient : ILLMClient
     public async Task GetCodeReviewReportAsync(Guid pendingReviewId, string language, string codeSnippet, CancellationToken ct)
     {
         await _reviewRepository.ChangeStatusAsync(pendingReviewId, "Processing", ct);
-        var review = await _reviewRepository.GetReviewByIdAsync(pendingReviewId, ct);
 
         var ollamaRequest = new OllamaRequest       // One prompt, two sections identifying the Persona/Role and Task
         {
@@ -58,19 +62,21 @@ public class OllamaClient : ILLMClient
 
             await _reviewRepository.AddReportToTheReviewAsync(pendingReviewId, ollamaResponse!.Done, ollamaResponse.Message.Content, ct);
 
-            if (review.Status == "Completed" && !string.IsNullOrWhiteSpace(review.WebhookUrl))
+            var review = await _reviewRepository.GetReviewByIdAsync(pendingReviewId, ct);
+
+            if (!string.IsNullOrWhiteSpace(review.WebhookUrl))
             {
-                var reviewDto = CodeReviewResponseDto.FromModel(review);
+                NotificationBodyDto? notificationBody = NotificationBodyDto.FromModel(review);
 
                 try
                 {
-                    var notification = await _httpClient.PostAsJsonAsync(review.WebhookUrl, reviewDto, ct);
-                    notification.EnsureSuccessStatusCode();
+                    await _notificationService.SendAsync(notificationBody!, new Uri(review.WebhookUrl), ct);
                 }
 
                 catch
                 {
-
+                    // May log here that the notifying process failed
+                    // This catch is mainly for swallowing the exception to not retry the job due to failing of the notifying.
                 }
             }
         }
