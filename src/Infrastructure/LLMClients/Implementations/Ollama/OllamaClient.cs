@@ -26,7 +26,7 @@ public class OllamaClient : ILLMClient
         _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _apiKey);
     }
 
-    public async Task<LLMResponse> GetCodeReviewReportAsync(Guid pendingReviewId, string language, string codeSnippet, CancellationToken ct)
+    public async Task<LLMResponse> GetCodeReviewReportAsync(string language, string codeSnippet, CancellationToken ct)
     {
         var ollamaRequest = new OllamaRequest       // One prompt, two sections identifying the Persona/Role and Task
         {

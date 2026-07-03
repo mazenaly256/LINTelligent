@@ -37,15 +37,22 @@ public class ReviewService(IReviewRepository reviewRepository, ILLMClient llmCli
     {
         try
         {
+            var reviewFromDB = await reviewRepository.GetReviewByIdAsync(pendingReviewId, CancellationToken.None);
+
+            if (reviewFromDB?.Status == "Completed")        // to avoid job execution retry that was triggered due to notification exception, if the job is completed then do not retry the job execution
+            {
+                return;
+            }
+
             await reviewRepository.ChangeStatusAsync(pendingReviewId, "Processing", CancellationToken.None);
 
-            var llmResponse = await llmClient.GetCodeReviewReportAsync(pendingReviewId, language, codeSnippet, CancellationToken.None);
+            var llmResponse = await llmClient.GetCodeReviewReportAsync(language, codeSnippet, CancellationToken.None);
 
             await reviewRepository.AddReportToTheReviewAsync(pendingReviewId, llmResponse.CodeReviewReport, CancellationToken.None);
             
             await reviewRepository.ChangeStatusAsync(pendingReviewId, llmResponse.SuccessfulRequest ? "Completed" : "Failed", CancellationToken.None);
 
-            var reviewFromDB = await reviewRepository.GetReviewByIdAsync(pendingReviewId, CancellationToken.None);
+            reviewFromDB = await reviewRepository.GetReviewByIdAsync(pendingReviewId, CancellationToken.None);
 
             // Notifying the user
             try
@@ -61,7 +68,8 @@ public class ReviewService(IReviewRepository reviewRepository, ILLMClient llmCli
             catch
             {
                 // May log here that the notifying process failed
-                // This catch is mainly for swallowing the exception to not retry the job due to failing of the notifying.
+                // To avoid entering in the catch below, and change the status of the review to failed just because error in notification
+                throw;      // to test the execution path of throwing UriFormatException
             }
         }
 
