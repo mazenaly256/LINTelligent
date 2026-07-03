@@ -8,7 +8,7 @@ public interface IReviewRepository
 
     public Task ChangeStatusAsync(Guid reviewId, string newStatus, CancellationToken ct);
 
-    public Task AddReportToTheReviewAsync(Guid reviewId, bool done, string report, CancellationToken ct);
+    public Task AddReportToTheReviewAsync(Guid reviewId, string report, CancellationToken ct);
 
     public Task<Review?> GetReviewByIdAsync(Guid reviewId, CancellationToken ct);
 }

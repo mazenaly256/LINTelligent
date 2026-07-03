@@ -1,5 +1,5 @@
 ﻿using LINTelligent.Application.DTOs;
-using LINTelligent.Application.Interfaces;
+using LINTelligent.Application.Services.Interfaces;
 
 namespace LINTelligent.Infrastructure.Services;
 
@@ -7,7 +7,7 @@ public class NotificationService(IHttpClientFactory httpClientFactory) : INotifi
 {
     private readonly HttpClient _httpClient = httpClientFactory.CreateClient();
 
-    public async Task SendAsync(NotificationBodyDto body, Uri destinationUrl, CancellationToken ct)
+    public async Task SendAsync(NotificationMessageDto body, Uri destinationUrl, CancellationToken ct)
     {
         // webhook-based notifying
 

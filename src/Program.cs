@@ -1,8 +1,12 @@
 using Hangfire;
 using Hangfire.PostgreSql;
+using LINTelligent.Application.Services.Implementations;
+using LINTelligent.Application.Services.Interfaces;
 using LINTelligent.Infrastructure.LLMClients.Implementations.Ollama;
 using LINTelligent.Infrastructure.LLMClients.Interfaces;
 using LINTelligent.Infrastructure.Persistence;
+using LINTelligent.Infrastructure.Persistence.Repositories.Implementations;
+using LINTelligent.Infrastructure.Persistence.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -17,6 +21,8 @@ builder.Services.AddDbContext<AppDbContext>(options => options.UseNpgsql(dbConne
 builder.Services.AddHttpClient();
 
 builder.Services.AddScoped<ILLMClient, OllamaClient>();
+builder.Services.AddScoped<IReviewRepository, ReviewRepository>();
+builder.Services.AddScoped<IReviewService, ReviewService>();
 
 builder.Services.AddOpenApi();
 
