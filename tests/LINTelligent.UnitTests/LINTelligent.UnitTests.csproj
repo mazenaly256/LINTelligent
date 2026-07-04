@@ -16,7 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\src\LINTelligent.csproj" />
+    <ProjectReference Include="..\..\src\LINTelligent.csproj" />
   </ItemGroup>
 
   <ItemGroup>

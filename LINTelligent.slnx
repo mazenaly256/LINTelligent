@@ -1,5 +1,5 @@
 <Solution>
   <Project Path="src/LINTelligent.csproj" />
-  <Project Path="tests/integration/LINTelligent.IntegrationTests/LINTelligent.IntegrationTests.csproj" Id="45de206e-c62e-4b6b-9938-915fe68af229" />
-  <Project Path="tests/unit/LINTelligent.UnitTests/LINTelligent.UnitTests.csproj" Id="7a8e17ec-f862-4eed-b905-ad148dfbf309" />
+  <Project Path="tests/LINTelligent.IntegrationTests/LINTelligent.IntegrationTests.csproj" />
+  <Project Path="tests/LINTelligent.UnitTests/LINTelligent.UnitTests.csproj" />
 </Solution>
