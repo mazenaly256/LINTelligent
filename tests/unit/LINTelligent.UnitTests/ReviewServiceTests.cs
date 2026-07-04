@@ -12,12 +12,14 @@ public class ReviewServiceTests
     private Mock<IReviewRepository> _fakeReviewRepository;
     private Mock<ILLMClient> _fakeLLMClient;
     private Mock<INotificationService> _fakeNotificationService;
+    private ReviewService _reviewService;
 
     public ReviewServiceTests()
     {
         _fakeReviewRepository = new();
         _fakeLLMClient = new();
         _fakeNotificationService = new();
+        _reviewService = new(_fakeReviewRepository.Object, _fakeLLMClient.Object, _fakeNotificationService.Object);
     }
 
 
@@ -31,10 +33,8 @@ public class ReviewServiceTests
         _fakeLLMClient.Setup(mock => mock.GetCodeReviewReportAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new Infrastructure.DTOs.LLMResponse());
 
-        var reviewService = new ReviewService(_fakeReviewRepository.Object, _fakeLLMClient.Object, _fakeNotificationService.Object);
-
         // Act
-        await reviewService.RequestProcessingAsync(new Guid(), "", "", "");
+        await _reviewService.RequestProcessingAsync(new Guid(), "", "", "");
 
 
         // Assert
@@ -56,10 +56,8 @@ public class ReviewServiceTests
             .ReturnsAsync(new Infrastructure.DTOs.LLMResponse());
 
 
-        var reviewService = new ReviewService(_fakeReviewRepository.Object, _fakeLLMClient.Object, _fakeNotificationService.Object);
-
         // Act
-        await reviewService.RequestProcessingAsync(new Guid(), "", "", "");
+        await _reviewService.RequestProcessingAsync(new Guid(), "", "", "");
 
 
         // Assert
@@ -89,10 +87,8 @@ public class ReviewServiceTests
             .ReturnsAsync(new Infrastructure.DTOs.LLMResponse());
 
 
-        var reviewService = new ReviewService(_fakeReviewRepository.Object, _fakeLLMClient.Object, _fakeNotificationService.Object);
-
         // Act
-        await reviewService.RequestProcessingAsync(new Guid(), "", "", "");
+        await _reviewService.RequestProcessingAsync(new Guid(), "", "", "");
 
 
         // Assert
@@ -114,10 +110,8 @@ public class ReviewServiceTests
             .ReturnsAsync(new Infrastructure.DTOs.LLMResponse());
 
 
-        var reviewService = new ReviewService(_fakeReviewRepository.Object, _fakeLLMClient.Object, _fakeNotificationService.Object);
-
         // Act
-        await reviewService.RequestProcessingAsync(new Guid(), "", "", "");
+        await _reviewService.RequestProcessingAsync(new Guid(), "", "", "");
 
 
         // Assert
@@ -141,10 +135,8 @@ public class ReviewServiceTests
             .ReturnsAsync(new Infrastructure.DTOs.LLMResponse());
        
 
-        var reviewService = new ReviewService(_fakeReviewRepository.Object, _fakeLLMClient.Object, _fakeNotificationService.Object);
-
         // Act
-        await reviewService.RequestProcessingAsync(new Guid(), "", "", webhookUrl);
+        await _reviewService.RequestProcessingAsync(new Guid(), "", "", webhookUrl);
 
 
         // Assert
@@ -167,10 +159,8 @@ public class ReviewServiceTests
             .ReturnsAsync(new Infrastructure.DTOs.LLMResponse());
        
 
-        var reviewService = new ReviewService(_fakeReviewRepository.Object, _fakeLLMClient.Object, _fakeNotificationService.Object);
-
         // Act
-        await reviewService.RequestProcessingAsync(new Guid(), "", "", "https://webhook.site/8ad81a9b-098d-49f8-893b-e1351e362ad7");
+        await _reviewService.RequestProcessingAsync(new Guid(), "", "", "https://webhook.site/8ad81a9b-098d-49f8-893b-e1351e362ad7");
 
 
         // Assert
@@ -192,12 +182,10 @@ public class ReviewServiceTests
             .ReturnsAsync(new Infrastructure.DTOs.LLMResponse());
 
 
-        var reviewService = new ReviewService(_fakeReviewRepository.Object, _fakeLLMClient.Object, _fakeNotificationService.Object);
-
         // Act and Assert
         await Assert.ThrowsAsync<UriFormatException>(async () =>
         {
-            await reviewService.RequestProcessingAsync(new Guid(), "", "", "any_invalid_webhook");
+            await _reviewService.RequestProcessingAsync(new Guid(), "", "", "any_invalid_webhook");
         });
     }
 
@@ -216,12 +204,10 @@ public class ReviewServiceTests
 
 
 
-        var reviewService = new ReviewService(_fakeReviewRepository.Object, _fakeLLMClient.Object, _fakeNotificationService.Object);
-
         // Act and Assert
         await Assert.ThrowsAsync<NullReferenceException>(async () =>
         {
-            await reviewService.RequestProcessingAsync(new Guid(), "", "", null);
+            await _reviewService.RequestProcessingAsync(new Guid(), "", "", null);
         });
 
         // Assert
@@ -244,12 +230,10 @@ public class ReviewServiceTests
             .ThrowsAsync(new HttpRequestException());
 
 
-        var reviewService = new ReviewService(_fakeReviewRepository.Object, _fakeLLMClient.Object, _fakeNotificationService.Object);
-
         // Act and Assert
         await Assert.ThrowsAsync<HttpRequestException>(async () =>
         {
-            await reviewService.RequestProcessingAsync(new Guid(), "", "", null);
+            await _reviewService.RequestProcessingAsync(new Guid(), "", "", null);
         });
 
         // Assert
@@ -274,10 +258,8 @@ public class ReviewServiceTests
             });
        
 
-        var reviewService = new ReviewService(_fakeReviewRepository.Object, _fakeLLMClient.Object, _fakeNotificationService.Object);
-
         // Act
-        await reviewService.RequestProcessingAsync(new Guid(), "", "", null);
+        await _reviewService.RequestProcessingAsync(new Guid(), "", "", null);
 
 
         // Assert
@@ -301,10 +283,8 @@ public class ReviewServiceTests
             });
 
 
-        var reviewService = new ReviewService(_fakeReviewRepository.Object, _fakeLLMClient.Object, _fakeNotificationService.Object);
-
         // Act
-        await reviewService.RequestProcessingAsync(new Guid(), "", "", null);
+        await _reviewService.RequestProcessingAsync(new Guid(), "", "", null);
 
 
         // Assert
