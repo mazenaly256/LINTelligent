@@ -39,7 +39,7 @@ public class ReviewService(IReviewRepository reviewRepository, ILLMClient llmCli
         {
             await reviewRepository.ChangeStatusAsync(pendingReviewId, "Processing", CancellationToken.None);
 
-            var llmResponse = await llmClient.GetCodeReviewReportAsync(pendingReviewId, language, codeSnippet, CancellationToken.None);
+            var llmResponse = await llmClient.GetCodeReviewReportAsync(language, codeSnippet, CancellationToken.None);
 
             await reviewRepository.AddReportToTheReviewAsync(pendingReviewId, llmResponse.CodeReviewReport, CancellationToken.None);
             
@@ -61,7 +61,7 @@ public class ReviewService(IReviewRepository reviewRepository, ILLMClient llmCli
             catch
             {
                 // May log here that the notifying process failed
-                // This catch is mainly for swallowing the exception to not retry the job due to failing of the notifying.
+                // swallow the webhook-related issue silently, as it should not cause problems on the flow of job execution
             }
         }
 
