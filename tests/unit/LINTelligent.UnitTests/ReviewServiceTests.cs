@@ -24,7 +24,7 @@ public class ReviewServiceTests
 
 
     [Fact]
-    public async Task RequestProcessingAsync_WhenCalled_ChangeStatusToProcessing()
+    public async Task RequestProcessingAsync_WhenCalled_ChangesStatusToProcessing()
     {
         // Arrange
         _fakeReviewRepository.Setup(mock => mock.GetReviewByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
@@ -45,7 +45,7 @@ public class ReviewServiceTests
 
 
     [Fact]
-    public async Task RequestProcessingAsync_WhenCalled_ChangeStatusToCompletedOrFailed()
+    public async Task RequestProcessingAsync_WhenCalled_ChangesStatusToCompletedOrFailed()
     {
         // Arrange
         _fakeReviewRepository.Setup(mock => mock.GetReviewByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
@@ -68,7 +68,7 @@ public class ReviewServiceTests
 
 
     [Fact]
-    public async Task RequestProcessingAsync_WhenCalled_ChangeStatusToProcessingBeforeToCompletedOrFailedInOrder()
+    public async Task RequestProcessingAsync_WhenCalled_ChangesStatusToProcessingBeforeToCompletedOrFailedInOrder()
     {
         // Arrange
         _fakeReviewRepository.Setup(mock => mock.GetReviewByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
@@ -124,6 +124,7 @@ public class ReviewServiceTests
     [Theory]
     [InlineData(null)]
     [InlineData("")]
+    [InlineData("   ")]
     public async Task RequestProcessingAsync_WhenWebhookIsNullOrWhiteSpace_DoesNotSendNotification(string? webhookUrl)
     {
         // Arrange
@@ -171,7 +172,7 @@ public class ReviewServiceTests
 
 
     [Fact]
-    public async Task RequestProcessingAsync_WhenWebhookIsInvalidUrl_ThrowsUriFormatException()
+    public async Task RequestProcessingAsync_WhenWebhookIsInvalidUrl_DoesNotSendNotification()
     {
         // Arrange
         _fakeReviewRepository.Setup(mock => mock.GetReviewByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
@@ -182,16 +183,18 @@ public class ReviewServiceTests
             .ReturnsAsync(new Infrastructure.DTOs.LLMResponse());
 
 
-        // Act and Assert
-        await Assert.ThrowsAsync<UriFormatException>(async () =>
-        {
-            await _reviewService.RequestProcessingAsync(new Guid(), "", "", "any_invalid_webhook");
-        });
+        // Act
+        await _reviewService.RequestProcessingAsync(new Guid(), "", "", "any_invalid_webhook");
+
+        // Assert
+        _fakeNotificationService.Verify(mock =>
+            mock.SendAsync(It.IsAny<NotificationMessageDto?>()!, It.IsAny<Uri>(), It.IsAny<CancellationToken>()),
+            Times.Never);
     }
 
 
     [Fact]
-    public async Task RequestProcessingAsync_WhenLLMClientReturnsNull_ThrowsNullReferenceExceptionAndChangeStatusToFailed()
+    public async Task RequestProcessingAsync_WhenLLMClientReturnsNull_ThrowsNullReferenceExceptionAndChangesStatusToFailed()
     {
         // Arrange
         _fakeReviewRepository.Setup(mock => mock.GetReviewByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
