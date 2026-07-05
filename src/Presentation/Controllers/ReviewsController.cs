@@ -1,9 +1,6 @@
-﻿using Hangfire;
-using LINTelligent.Application.DTOs;
+﻿using LINTelligent.Application.DTOs;
 using LINTelligent.Application.Services.Interfaces;
 using LINTelligent.Domain;
-using LINTelligent.Infrastructure.LLMClients.Interfaces;
-using LINTelligent.Infrastructure.Persistence;
 using LINTelligent.Presentation.DTOs.Request;
 using LINTelligent.Presentation.DTOs.Response;
 using Microsoft.AspNetCore.Mvc;
@@ -38,7 +35,7 @@ public class ReviewsController(IReviewService reviewService) : ControllerBase
         };
 
         var newReviewId = await reviewService.SubmitReviewRequestAsync(newReviewRequest, ct);
-       
+
         return Accepted($"/reviews/{newReviewId}");
     }
 
@@ -61,7 +58,7 @@ public class ReviewsController(IReviewService reviewService) : ControllerBase
             });
         }
         var reviewDto = CodeReviewResponseDto.FromModel(reviewFromDB);
-       
+
         return Ok(reviewDto);
     }
 }

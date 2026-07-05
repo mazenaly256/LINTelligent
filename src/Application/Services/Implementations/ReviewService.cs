@@ -2,12 +2,8 @@
 using LINTelligent.Application.DTOs;
 using LINTelligent.Application.Services.Interfaces;
 using LINTelligent.Domain;
-using LINTelligent.Infrastructure.LLMClients.Implementations.Ollama.DTOs;
 using LINTelligent.Infrastructure.LLMClients.Interfaces;
-using LINTelligent.Infrastructure.Persistence.Repositories.Implementations;
 using LINTelligent.Infrastructure.Persistence.Repositories.Interfaces;
-using LINTelligent.Infrastructure.Services;
-using Microsoft.AspNetCore.Mvc;
 
 namespace LINTelligent.Application.Services.Implementations;
 
@@ -42,7 +38,7 @@ public class ReviewService(IReviewRepository reviewRepository, ILLMClient llmCli
             var llmResponse = await llmClient.GetCodeReviewReportAsync(language, codeSnippet, CancellationToken.None);
 
             await reviewRepository.AddReportToTheReviewAsync(pendingReviewId, llmResponse.CodeReviewReport, CancellationToken.None);
-            
+
             await reviewRepository.ChangeStatusAsync(pendingReviewId, llmResponse.SuccessfulRequest ? "Completed" : "Failed", CancellationToken.None);
 
             var reviewFromDB = await reviewRepository.GetReviewByIdAsync(pendingReviewId, CancellationToken.None);
@@ -72,7 +68,7 @@ public class ReviewService(IReviewRepository reviewRepository, ILLMClient llmCli
 
             throw;      // rethrows the error to trigger Hangfire rescheduling for the job.
         }
-        
+
     }
 
     public async Task<Review?> GetReviewDetailsAsync(Guid reviewId, CancellationToken ct)

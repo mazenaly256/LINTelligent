@@ -8,7 +8,6 @@ using LINTelligent.Infrastructure.Persistence;
 using LINTelligent.Infrastructure.Persistence.Repositories.Implementations;
 using LINTelligent.Infrastructure.Persistence.Repositories.Interfaces;
 using LINTelligent.Infrastructure.Services;
-using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -36,15 +35,10 @@ builder.Services.AddHangfire(config =>
     .UseRecommendedSerializerSettings()
     .UsePostgreSqlStorage(options => options.UseNpgsqlConnection(dbConnectionString));
 });
+
 builder.Services.AddHangfireServer();
 
 var app = builder.Build();
-
-// solves the issue of swagger generation of http server base URL
-app.UseForwardedHeaders(new ForwardedHeadersOptions
-{
-    ForwardedHeaders = ForwardedHeaders.XForwardedProto
-});
 
 app.MapOpenApi();
 
