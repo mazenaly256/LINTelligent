@@ -7,14 +7,16 @@ on:
       - main
     paths:
       - "src/**"
+      - "tests/**"
   pull_request:
     branches:
       - main
     paths:
       - "src/**"
+      - "tests/**"
 
 jobs:
-  verify-compilation:
+  build-and-test:
     runs-on: ubuntu-latest
     steps:
       - name: Pull source code
@@ -27,5 +29,12 @@ jobs:
 
       - name: Restore and Build
         run: |
-          dotnet restore src/LINTelligent.csproj
-          dotnet build src/LINTelligent.csproj --no-restore --configuration Release
+          dotnet restore
+          dotnet build --no-restore --configuration Release
+
+      - name: Run Unit Tests
+        run: dotnet test tests/LINTelligent.UnitTests/LINTelligent.UnitTests.csproj --no-build --configuration Release
+
+      - name: Run Integration Tests
+        run: dotnet test tests/LINTelligent.IntegrationTests/LINTelligent.IntegrationTests.csproj --no-build --configuration Release
+
