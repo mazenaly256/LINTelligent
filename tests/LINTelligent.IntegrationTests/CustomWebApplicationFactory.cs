@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Configuration;
 
 namespace LINTelligent.IntegrationTests;
 
@@ -15,6 +16,19 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
+        builder.ConfigureAppConfiguration(config =>
+        {
+            // this runs before Program.cs reads configuration. Overrides data that exists in appsettings.json
+            config.AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["ConnectionStrings:Default"] = "Host=dummy_host;Database=dummy_database;Username=dummy_username;Password=dummy_password",
+                ["LLM:API_KEY"] = "dummy_api_key_for_testing",
+                ["LLM:SYSTEM_PROMPT"] = "dummy_api_key_for_testing",
+                ["LLM:HOST"] = "http://dummy_llm_host_for_testing"
+            });
+        });
+
+
         builder.ConfigureTestServices(services =>
         {
             // Remove real PostgreSQL DbContextOptions
