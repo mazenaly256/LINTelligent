@@ -2,6 +2,9 @@
 
 _AI-integrated backend service for code linting (ie. analyzing code for issues). Accepts code snippets via a REST API, analyzes them using LLM, and returns a structured review identifying issues by severity, line number, type, and a short human-readable explanation for each issue._
 
+
+![CI Pipeline Building and Testing](https://github.com/mazenaly256/LINTelligent/actions/workflows/ci-pipeline.yml/badge.svg)
+
 ---
 
 ## Overview
@@ -15,3 +18,20 @@ Once the review result is saved, the service notifies the client _by sending the
 #### Basic system architecture diagram
 
 ![System Architecture Diagram](docs/system-architecture-diagram.png)
+
+---
+
+## Getting Started
+- You need a webhook url, if you want to get notified once the code linting is finished, you can create one online and send it with the request
+- Go to [Swagger Interface](https://lintelligent-production.up.railway.app/swagger/index.html) to test the API and try the functionality
+
+--- 
+
+## Tech Stack
+- ASP.NET Core Web API
+- xUnit & Moq
+- Hangfire
+- Ollama Cloud
+- PostgreSQL & Entity Framework Core
+- GitHub Actions
+
