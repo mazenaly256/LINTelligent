@@ -1,3 +1,5 @@
 <Solution>
   <Project Path="src/LINTelligent.csproj" />
+  <Project Path="tests/LINTelligent.IntegrationTests/LINTelligent.IntegrationTests.csproj" />
+  <Project Path="tests/LINTelligent.UnitTests/LINTelligent.UnitTests.csproj" />
 </Solution>
