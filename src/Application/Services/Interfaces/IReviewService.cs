@@ -9,7 +9,9 @@ public interface IReviewService
     public Task<Guid> SubmitReviewRequestAsync(NewReviewRequestDto reviewRequest, CancellationToken ct);
 
     [AutomaticRetry(Attempts = 3, DelaysInSeconds = new[] { 5, 10, 30 })]
-    public Task RequestProcessingAsync(Guid pendingReviewId, string language, string codeSnippetm, string? webhookUrl);
+    public Task CallLLMAndPersistReviewReportAsync(Guid reviewId, CancellationToken ct);
+
+    public Task FetchAndPersistTheCodeSnippetFromGitHubAsync(Guid reviewId, string gitHubUserContentUrl, CancellationToken ct);
 
     public Task<Review?> GetReviewDetailsAsync(Guid reviewId, CancellationToken ct);
 }

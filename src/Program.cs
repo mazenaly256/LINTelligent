@@ -3,6 +3,7 @@ using Hangfire.PostgreSql;
 using LINTelligent.Application.Contracts.Interfaces;
 using LINTelligent.Application.Services.Implementations;
 using LINTelligent.Application.Services.Interfaces;
+using LINTelligent.Infrastructure.Clients.GitHub;
 using LINTelligent.Infrastructure.Clients.Ollama;
 using LINTelligent.Infrastructure.Persistence;
 using LINTelligent.Infrastructure.Persistence.Repositories;
@@ -21,6 +22,7 @@ builder.Services.AddDbContext<AppDbContext>(options => options.UseNpgsql(dbConne
 builder.Services.AddHttpClient();
 
 builder.Services.AddScoped<ILLMClient, OllamaClient>();
+builder.Services.AddScoped<IGitHubClient, GitHubClient>();
 builder.Services.AddScoped<IReviewRepository, ReviewRepository>();
 builder.Services.AddScoped<IReviewService, ReviewService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();

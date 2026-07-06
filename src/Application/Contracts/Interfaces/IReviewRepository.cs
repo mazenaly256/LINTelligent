@@ -10,5 +10,7 @@ public interface IReviewRepository
 
     public Task AddReportToTheReviewAsync(Guid reviewId, string report, CancellationToken ct);
 
+    public Task PersistCodeSnippetFromGitHub(Guid reviewId, string codeSnippet, CancellationToken ct);
+
     public Task<Review?> GetReviewByIdAsync(Guid reviewId, CancellationToken ct);
 }

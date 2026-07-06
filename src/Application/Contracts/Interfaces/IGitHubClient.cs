@@ -2,5 +2,5 @@
 
 public interface IGitHubClient
 {
-    public Task<string> FetchCodeSnippetFromUrlAsync(string url);
+    public Task<string> FetchCodeSnippetFromUrlAsync(string gitHubUserContentUrl, CancellationToken ct);
 }

@@ -6,10 +6,11 @@ public class GitHubClient(IHttpClientFactory httpClientFactory) : IGitHubClient
 {
     private readonly HttpClient _httpClient = httpClientFactory.CreateClient();
 
-    public async Task<string> FetchCodeSnippetFromUrlAsync(string url)
+    public async Task<string> FetchCodeSnippetFromUrlAsync(string gitHubUserContentUrl, CancellationToken ct)
     {
-        var response = await _httpClient.GetAsync(url);
+        var response = await _httpClient.GetAsync(gitHubUserContentUrl, ct);
         response.EnsureSuccessStatusCode();
-        return await response.Content.ReadAsStringAsync();
+
+        return await response.Content.ReadAsStringAsync(ct);
     }
 }

@@ -13,6 +13,15 @@ public class ReviewRepository(AppDbContext context) : IReviewRepository
         return review.Id;
     }
 
+    public async Task PersistCodeSnippetFromGitHub(Guid reviewId, string codeSnippet, CancellationToken ct)
+    {
+        var reviewFromDB = await context.Reviews.FindAsync(reviewId);
+
+        reviewFromDB.CodeSnippet = codeSnippet;
+
+        await context.SaveChangesAsync(ct);
+    }
+
     public async Task AddReportToTheReviewAsync(Guid reviewId, string report, CancellationToken ct)
     {
         var reviewFromDB = await this.GetReviewByIdAsync(reviewId, ct);

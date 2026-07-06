@@ -31,6 +31,7 @@ public class ReviewsController(IReviewService reviewService) : ControllerBase
         {
             Language = codeReviewRequest.Language,
             CodeSnippet = codeReviewRequest.CodeSnippet,
+            GitHubContentUrl = codeReviewRequest.GitHubUserContentFileUrl,
             WebhookUrl = codeReviewRequest.WebhookUrl
         };
 
