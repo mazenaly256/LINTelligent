@@ -1,4 +1,4 @@
-﻿using LINTelligent.Application.DTOs;
+﻿using LINTelligent.Application.Contracts.DTOs;
 using LINTelligent.Application.Services.Interfaces;
 using LINTelligent.Domain;
 using LINTelligent.Presentation.DTOs.Request;
@@ -27,7 +27,7 @@ public class ReviewsController(IReviewService reviewService) : ControllerBase
             });
         }
 
-        NewReviewRequest newReviewRequest = new()
+        NewReviewRequestDto newReviewRequest = new()
         {
             Language = codeReviewRequest.Language,
             CodeSnippet = codeReviewRequest.CodeSnippet,

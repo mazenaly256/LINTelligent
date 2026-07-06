@@ -1,9 +1,9 @@
 ﻿using LINTelligent.Domain;
 using System.Text.Json;
 
-namespace LINTelligent.Application.DTOs;
+namespace LINTelligent.Application.Contracts.DTOs;
 
-public class NotificationMessageDto      // DTO to communicate with the Infrastructure layer
+public class NotificationMessageDto      // to communicate with the Infrastructure layer
 {
     public Guid ReviewId { get; set; }
 

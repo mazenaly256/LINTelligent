@@ -1,7 +1,7 @@
-﻿using LINTelligent.Domain;
-using LINTelligent.Infrastructure.Persistence.Repositories.Interfaces;
+﻿using LINTelligent.Application.Contracts.Interfaces;
+using LINTelligent.Domain;
 
-namespace LINTelligent.Infrastructure.Persistence.Repositories.Implementations;
+namespace LINTelligent.Infrastructure.Persistence.Repositories;
 
 public class ReviewRepository(AppDbContext context) : IReviewRepository
 {

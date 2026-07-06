@@ -1,12 +1,11 @@
 using Hangfire;
 using Hangfire.PostgreSql;
+using LINTelligent.Application.Contracts.Interfaces;
 using LINTelligent.Application.Services.Implementations;
 using LINTelligent.Application.Services.Interfaces;
-using LINTelligent.Infrastructure.LLMClients.Implementations.Ollama;
-using LINTelligent.Infrastructure.LLMClients.Interfaces;
+using LINTelligent.Infrastructure.Clients.Ollama;
 using LINTelligent.Infrastructure.Persistence;
-using LINTelligent.Infrastructure.Persistence.Repositories.Implementations;
-using LINTelligent.Infrastructure.Persistence.Repositories.Interfaces;
+using LINTelligent.Infrastructure.Persistence.Repositories;
 using LINTelligent.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
 

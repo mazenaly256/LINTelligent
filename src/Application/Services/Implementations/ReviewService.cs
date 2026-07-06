@@ -1,15 +1,14 @@
 ﻿using Hangfire;
-using LINTelligent.Application.DTOs;
+using LINTelligent.Application.Contracts.DTOs;
+using LINTelligent.Application.Contracts.Interfaces;
 using LINTelligent.Application.Services.Interfaces;
 using LINTelligent.Domain;
-using LINTelligent.Infrastructure.LLMClients.Interfaces;
-using LINTelligent.Infrastructure.Persistence.Repositories.Interfaces;
 
 namespace LINTelligent.Application.Services.Implementations;
 
 public class ReviewService(IReviewRepository reviewRepository, ILLMClient llmClient, INotificationService notificationService) : IReviewService
 {
-    public async Task<Guid> SubmitReviewRequestAsync(NewReviewRequest reviewRequest, CancellationToken ct)
+    public async Task<Guid> SubmitReviewRequestAsync(NewReviewRequestDto reviewRequest, CancellationToken ct)
     {
         Review newReview = new()
         {

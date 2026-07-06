@@ -1,6 +1,6 @@
 ﻿using LINTelligent.Domain;
 
-namespace LINTelligent.Infrastructure.Persistence.Repositories.Interfaces;
+namespace LINTelligent.Application.Contracts.Interfaces;
 
 public interface IReviewRepository
 {

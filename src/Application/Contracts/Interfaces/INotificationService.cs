@@ -1,6 +1,6 @@
-﻿using LINTelligent.Application.DTOs;
+﻿using LINTelligent.Application.Contracts.DTOs;
 
-namespace LINTelligent.Application.Services.Interfaces;
+namespace LINTelligent.Application.Contracts.Interfaces;
 
 public interface INotificationService
 {

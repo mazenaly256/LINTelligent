@@ -1,4 +1,4 @@
-﻿using LINTelligent.Application.DTOs;
+﻿using LINTelligent.Application.Contracts.DTOs;
 using LINTelligent.Application.Services.Interfaces;
 using LINTelligent.Presentation.Controllers;
 using Microsoft.AspNetCore.Mvc;
@@ -54,7 +54,7 @@ public class ReviewsControllerTests
 
 
         // Assert
-        _fakeReviewService.Verify(mock => mock.SubmitReviewRequestAsync(It.IsAny<NewReviewRequest>(), It.IsAny<CancellationToken>()),
+        _fakeReviewService.Verify(mock => mock.SubmitReviewRequestAsync(It.IsAny<NewReviewRequestDto>(), It.IsAny<CancellationToken>()),
             Times.Once);
 
         Assert.IsType<AcceptedResult>(result.Result);
