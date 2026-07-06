@@ -29,7 +29,7 @@ public class ReviewServiceTests
             .ReturnsAsync(new Domain.Review());
 
         _fakeLLMClient.Setup(mock => mock.GetCodeReviewReportAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new Infrastructure.DTOs.LLMResponseDto());
+            .ReturnsAsync(new LLMResponseDto());
 
         // Act
         await _reviewService.RequestProcessingAsync(new Guid(), "", "", "");
@@ -51,7 +51,7 @@ public class ReviewServiceTests
 
 
         _fakeLLMClient.Setup(mock => mock.GetCodeReviewReportAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new Infrastructure.DTOs.LLMResponseDto());
+            .ReturnsAsync(new LLMResponseDto());
 
 
         // Act
@@ -82,7 +82,7 @@ public class ReviewServiceTests
             .Returns(Task.CompletedTask);
 
         _fakeLLMClient.Setup(mock => mock.GetCodeReviewReportAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new Infrastructure.DTOs.LLMResponseDto());
+            .ReturnsAsync(new LLMResponseDto());
 
 
         // Act
@@ -105,7 +105,7 @@ public class ReviewServiceTests
             .ReturnsAsync(new Domain.Review());
 
         _fakeLLMClient.Setup(mock => mock.GetCodeReviewReportAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new Infrastructure.DTOs.LLMResponseDto());
+            .ReturnsAsync(new LLMResponseDto());
 
 
         // Act
@@ -131,7 +131,7 @@ public class ReviewServiceTests
 
 
         _fakeLLMClient.Setup(mock => mock.GetCodeReviewReportAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new Infrastructure.DTOs.LLMResponseDto());
+            .ReturnsAsync(new LLMResponseDto());
        
 
         // Act
@@ -155,7 +155,7 @@ public class ReviewServiceTests
 
 
         _fakeLLMClient.Setup(mock => mock.GetCodeReviewReportAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new Infrastructure.DTOs.LLMResponseDto());
+            .ReturnsAsync(new LLMResponseDto());
        
 
         // Act
@@ -178,7 +178,7 @@ public class ReviewServiceTests
 
 
         _fakeLLMClient.Setup(mock => mock.GetCodeReviewReportAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new Infrastructure.DTOs.LLMResponseDto());
+            .ReturnsAsync(new LLMResponseDto());
 
 
         // Act
@@ -253,7 +253,7 @@ public class ReviewServiceTests
 
 
         _fakeLLMClient.Setup(mock => mock.GetCodeReviewReportAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new Infrastructure.DTOs.LLMResponseDto()
+            .ReturnsAsync(new LLMResponseDto()
             {
                 SuccessfulRequest = true
             });
@@ -278,7 +278,7 @@ public class ReviewServiceTests
             .ReturnsAsync(new Domain.Review());
 
         _fakeLLMClient.Setup(mock => mock.GetCodeReviewReportAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new Infrastructure.DTOs.LLMResponseDto()
+            .ReturnsAsync(new LLMResponseDto()
             {
                 SuccessfulRequest = false
             });
