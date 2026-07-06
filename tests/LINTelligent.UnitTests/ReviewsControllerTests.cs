@@ -35,7 +35,7 @@ public class ReviewsControllerTests
 
 
         // Assert
-        Assert.IsType<BadRequestObjectResult>(result.Result);
+        Assert.IsType<BadRequestObjectResult>(result);
     }
 
 
@@ -57,7 +57,7 @@ public class ReviewsControllerTests
         _fakeReviewService.Verify(mock => mock.SubmitReviewRequestAsync(It.IsAny<NewReviewRequestDto>(), It.IsAny<CancellationToken>()),
             Times.Once);
 
-        Assert.IsType<AcceptedResult>(result.Result);
+        Assert.IsType<AcceptedResult>(result);
     }
 
 

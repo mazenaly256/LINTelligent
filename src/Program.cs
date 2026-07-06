@@ -21,6 +21,12 @@ builder.Services.AddDbContext<AppDbContext>(options => options.UseNpgsql(dbConne
 
 builder.Services.AddHttpClient();
 
+builder.Services.AddHttpClient("GitHubClient")
+    .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
+    {
+        AllowAutoRedirect = false
+    });
+
 builder.Services.AddScoped<ILLMClient, OllamaClient>();
 builder.Services.AddScoped<IGitHubClient, GitHubClient>();
 builder.Services.AddScoped<IReviewRepository, ReviewRepository>();

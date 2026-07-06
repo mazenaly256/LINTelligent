@@ -21,7 +21,7 @@ public class ReviewService(IReviewRepository reviewRepository, ILLMClient llmCli
 
         var newReviewId = await reviewRepository.AddNewReviewAsync(newReview, ct);
 
-        if (reviewRequest.GitHubContentUrl is null)
+        if (string.IsNullOrWhiteSpace(reviewRequest.GitHubContentUrl))
         {
             // Once the endpoint call finishes, the framework marks the cancellation token so any thread that uses it will be a canceled operation and when the token is used again when the worker executes the job, it will directly throw OperationCanceledException
             // So that, never send the cancellation token to the be saved as a parameter for an async job.
@@ -42,18 +42,23 @@ public class ReviewService(IReviewRepository reviewRepository, ILLMClient llmCli
 
     public async Task FetchAndPersistTheCodeSnippetFromGitHubAsync(Guid reviewId, string gitHubUserContentUrl, CancellationToken ct)
     {
-        await reviewRepository.ChangeStatusAsync(reviewId, "Processing", ct);
+        try
+        {
+            await reviewRepository.ChangeStatusAsync(reviewId, "Processing", ct);
 
-        string codeSnippet = await gitHubClient.FetchCodeSnippetFromUrlAsync(gitHubUserContentUrl, ct);
+            string codeSnippet = await gitHubClient.FetchCodeSnippetFromUrlAsync(gitHubUserContentUrl, ct);
 
-        if (codeSnippet.Length > 5000)
+            if (codeSnippet.Length > 5000)
+            {
+                throw new ArgumentException();      // stop the execution of this job and dependent jobs.
+            }
+
+            await reviewRepository.PersistCodeSnippetFromGitHub(reviewId, codeSnippet, ct);
+        }
+        catch
         {
             await reviewRepository.ChangeStatusAsync(reviewId, "Failed", ct);
-
-            throw new ArgumentException();      // stop the execution of this job and dependent jobs.
         }
-
-        await reviewRepository.PersistCodeSnippetFromGitHub(reviewId, codeSnippet, ct);
     }
 
 

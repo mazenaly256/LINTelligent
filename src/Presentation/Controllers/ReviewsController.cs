@@ -16,7 +16,7 @@ public class ReviewsController(IReviewService reviewService) : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [EndpointName("Request a code review.")]
     [EndpointDescription("Lints the code snippet and give a review about it.")]
-    public async Task<ActionResult<Review>> ReviewCodeSnippetAsync(CodeReviewRequestDto codeReviewRequest, CancellationToken ct)
+    public async Task<IActionResult> ReviewCodeSnippetAsync(CodeReviewRequestDto codeReviewRequest, CancellationToken ct)
     {
         bool gitHubContentFileUrlExists = !string.IsNullOrWhiteSpace(codeReviewRequest.GitHubUserContentFileUrl);
         bool directCodeSnippetExists = !string.IsNullOrWhiteSpace(codeReviewRequest.CodeSnippet);
