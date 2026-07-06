@@ -17,7 +17,7 @@ public class ReviewConfiguration : IEntityTypeConfiguration<Review>
 
         builder.Property(r => r.CodeSnippet)
             .IsRequired()
-            .HasMaxLength(500);
+            .HasMaxLength(5000);
 
         builder.Property(r => r.Language)
             .IsRequired();

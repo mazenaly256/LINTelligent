@@ -9,6 +9,7 @@ public class ReviewServiceTests
 {
     private Mock<IReviewRepository> _fakeReviewRepository;
     private Mock<ILLMClient> _fakeLLMClient;
+    private Mock<IGitHubClient> _fakeGitHubClient;
     private Mock<INotificationService> _fakeNotificationService;
     private ReviewService _reviewService;
 
@@ -16,13 +17,14 @@ public class ReviewServiceTests
     {
         _fakeReviewRepository = new();
         _fakeLLMClient = new();
+        _fakeGitHubClient = new();
         _fakeNotificationService = new();
-        _reviewService = new(_fakeReviewRepository.Object, _fakeLLMClient.Object, _fakeNotificationService.Object);
+        _reviewService = new(_fakeReviewRepository.Object, _fakeLLMClient.Object, _fakeGitHubClient.Object, _fakeNotificationService.Object);
     }
 
 
     [Fact]
-    public async Task RequestProcessingAsync_WhenCalled_ChangesStatusToProcessing()
+    public async Task CallLLMAndPersistReviewReportAsync_WhenCalled_ChangesStatusToProcessing()
     {
         // Arrange
         _fakeReviewRepository.Setup(mock => mock.GetReviewByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
@@ -32,7 +34,7 @@ public class ReviewServiceTests
             .ReturnsAsync(new LLMResponseDto());
 
         // Act
-        await _reviewService.RequestProcessingAsync(new Guid(), "", "", "");
+        await _reviewService.CallLLMAndPersistReviewReportAsync(new Guid(), CancellationToken.None);
 
 
         // Assert
@@ -55,7 +57,7 @@ public class ReviewServiceTests
 
 
         // Act
-        await _reviewService.RequestProcessingAsync(new Guid(), "", "", "");
+        await _reviewService.CallLLMAndPersistReviewReportAsync(new Guid(), CancellationToken.None);
 
 
         // Assert
@@ -86,7 +88,7 @@ public class ReviewServiceTests
 
 
         // Act
-        await _reviewService.RequestProcessingAsync(new Guid(), "", "", "");
+        await _reviewService.CallLLMAndPersistReviewReportAsync(new Guid(), CancellationToken.None);
 
 
         // Assert
@@ -109,7 +111,7 @@ public class ReviewServiceTests
 
 
         // Act
-        await _reviewService.RequestProcessingAsync(new Guid(), "", "", "");
+        await _reviewService.CallLLMAndPersistReviewReportAsync(new Guid(), CancellationToken.None);
 
 
         // Assert
@@ -132,10 +134,15 @@ public class ReviewServiceTests
 
         _fakeLLMClient.Setup(mock => mock.GetCodeReviewReportAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new LLMResponseDto());
-       
+
 
         // Act
-        await _reviewService.RequestProcessingAsync(new Guid(), "", "", webhookUrl);
+        await _reviewService.SubmitReviewRequestAsync(new()
+        {
+            WebhookUrl = webhookUrl
+        }, CancellationToken.None);
+
+        await _reviewService.CallLLMAndPersistReviewReportAsync(new Guid(), CancellationToken.None);
 
 
         // Assert
@@ -156,10 +163,15 @@ public class ReviewServiceTests
 
         _fakeLLMClient.Setup(mock => mock.GetCodeReviewReportAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new LLMResponseDto());
-       
+
 
         // Act
-        await _reviewService.RequestProcessingAsync(new Guid(), "", "", "https://webhook.site/8ad81a9b-098d-49f8-893b-e1351e362ad7");
+        await _reviewService.SubmitReviewRequestAsync(new()
+        {
+            WebhookUrl = "https://webhook.site/8ad81a9b-098d-49f8-893b-e1351e362ad7"
+        }, CancellationToken.None);
+
+        await _reviewService.CallLLMAndPersistReviewReportAsync(new Guid(), CancellationToken.None);
 
 
         // Assert
@@ -182,7 +194,12 @@ public class ReviewServiceTests
 
 
         // Act
-        await _reviewService.RequestProcessingAsync(new Guid(), "", "", "any_invalid_webhook");
+        var newReviewId = await _reviewService.SubmitReviewRequestAsync(new()
+        {
+            WebhookUrl = "any_invalid_webhook"
+        }, CancellationToken.None);
+
+        await _reviewService.CallLLMAndPersistReviewReportAsync(newReviewId, CancellationToken.None);
 
         // Assert
         _fakeNotificationService.Verify(mock =>
@@ -208,7 +225,12 @@ public class ReviewServiceTests
         // Act and Assert
         await Assert.ThrowsAsync<NullReferenceException>(async () =>
         {
-            await _reviewService.RequestProcessingAsync(new Guid(), "", "", null);
+            var newReviewId = await _reviewService.SubmitReviewRequestAsync(new()
+            {
+                WebhookUrl = "any_invalid_webhook"
+            }, CancellationToken.None);
+
+            await _reviewService.CallLLMAndPersistReviewReportAsync(newReviewId, CancellationToken.None);
         });
 
         // Assert
@@ -234,7 +256,12 @@ public class ReviewServiceTests
         // Act and Assert
         await Assert.ThrowsAsync<HttpRequestException>(async () =>
         {
-            await _reviewService.RequestProcessingAsync(new Guid(), "", "", null);
+            var newReviewId = await _reviewService.SubmitReviewRequestAsync(new()
+            {
+                WebhookUrl = "any_invalid_webhook"
+            }, CancellationToken.None);
+
+            await _reviewService.CallLLMAndPersistReviewReportAsync(newReviewId, CancellationToken.None);
         });
 
         // Assert
@@ -257,10 +284,12 @@ public class ReviewServiceTests
             {
                 SuccessfulRequest = true
             });
-       
+
 
         // Act
-        await _reviewService.RequestProcessingAsync(new Guid(), "", "", null);
+        var newReviewId = await _reviewService.SubmitReviewRequestAsync(new(), CancellationToken.None);
+
+        await _reviewService.CallLLMAndPersistReviewReportAsync(newReviewId, CancellationToken.None);
 
 
         // Assert
@@ -285,7 +314,9 @@ public class ReviewServiceTests
 
 
         // Act
-        await _reviewService.RequestProcessingAsync(new Guid(), "", "", null);
+        var newReviewId = await _reviewService.SubmitReviewRequestAsync(new(), CancellationToken.None);
+
+        await _reviewService.CallLLMAndPersistReviewReportAsync(newReviewId, CancellationToken.None);
 
 
         // Assert

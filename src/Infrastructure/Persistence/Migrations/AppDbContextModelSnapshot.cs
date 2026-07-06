@@ -22,7 +22,7 @@ namespace LINTelligent.Infrastructure.Persistence.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("LINTelligent.Entities.Review", b =>
+            modelBuilder.Entity("LINTelligent.Domain.Review", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -31,8 +31,8 @@ namespace LINTelligent.Infrastructure.Persistence.Migrations
 
                     b.Property<string>("CodeSnippet")
                         .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)");
+                        .HasMaxLength(5000)
+                        .HasColumnType("character varying(5000)");
 
                     b.Property<string>("Language")
                         .IsRequired()

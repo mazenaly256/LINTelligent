@@ -18,7 +18,7 @@ public class ReviewsController(IReviewService reviewService) : ControllerBase
     [EndpointDescription("Lints the code snippet and give a review about it.")]
     public async Task<ActionResult<Review>> ReviewCodeSnippetAsync(CodeReviewRequestDto codeReviewRequest, CancellationToken ct)
     {
-        if (codeReviewRequest.CodeSnippet.Length > 500)
+        if (codeReviewRequest.CodeSnippet.Length > 5000)
         {
             return BadRequest(new ProblemDetails
             {
