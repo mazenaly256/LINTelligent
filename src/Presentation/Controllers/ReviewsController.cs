@@ -18,20 +18,57 @@ public class ReviewsController(IReviewService reviewService) : ControllerBase
     [EndpointDescription("Lints the code snippet and give a review about it.")]
     public async Task<ActionResult<Review>> ReviewCodeSnippetAsync(CodeReviewRequestDto codeReviewRequest, CancellationToken ct)
     {
-        if (codeReviewRequest.CodeSnippet.Length > 5000)
+        bool gitHubContentFileUrlExists = !string.IsNullOrWhiteSpace(codeReviewRequest.GitHubUserContentFileUrl);
+        bool directCodeSnippetExists = !string.IsNullOrWhiteSpace(codeReviewRequest.CodeSnippet);
+
+        if (gitHubContentFileUrlExists == directCodeSnippetExists)
+        {
+            return BadRequest(new ProblemDetails
+            {
+                Title = "Invalid data",
+                Detail = "It is mandatory to have only one way to request a review, either through GitHub or CodeSnippet field."
+            });
+        }
+
+        if (gitHubContentFileUrlExists)
+        {
+            if (Uri.TryCreate(codeReviewRequest.GitHubUserContentFileUrl, UriKind.Absolute, out var uri))
+            {
+                if (uri.Scheme != Uri.UriSchemeHttps || !string.Equals(uri.Host, "raw.githubusercontent.com", StringComparison.OrdinalIgnoreCase))
+                {
+                    return BadRequest(new ProblemDetails
+                    {
+                        Title = "Unsupported format for fetching from GitHub",
+                        Detail = "Can only fetch code through HTTPS URLs from raw.githubusercontent.com"
+                    });
+                }
+            }
+
+            else
+            {
+                return BadRequest(new ProblemDetails
+                {
+                    Title = "Invalid GitHub File URL",
+                    Detail = "Invalid GitHub Content File URL. Can only fetch code through HTTPS URLs from raw.githubusercontent.com"
+                });
+
+            }
+        }
+
+        if (directCodeSnippetExists && codeReviewRequest.CodeSnippet!.Length > 5000)
         {
             return BadRequest(new ProblemDetails
             {
                 Title = "Long code snippet.",
-                Detail = "Code snippet exceeds the maximum number of allowed characters. Max allowed: 500."
+                Detail = "Code snippet exceeds the maximum number of allowed characters (5000 characters)."
             });
         }
 
         NewReviewRequestDto newReviewRequest = new()
         {
             Language = codeReviewRequest.Language,
-            CodeSnippet = codeReviewRequest.CodeSnippet,
-            GitHubContentUrl = codeReviewRequest.GitHubUserContentFileUrl,
+            CodeSnippet = codeReviewRequest.CodeSnippet!,
+            GitHubContentUrl = codeReviewRequest.GitHubUserContentFileUrl!,
             WebhookUrl = codeReviewRequest.WebhookUrl
         };
 
