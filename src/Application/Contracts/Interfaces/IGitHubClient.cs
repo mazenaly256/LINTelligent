@@ -2,4 +2,5 @@
 
 public interface IGitHubClient
 {
+    public Task<string> FetchCodeSnippetFromUrlAsync(string url);
 }

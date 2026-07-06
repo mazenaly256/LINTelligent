@@ -6,7 +6,7 @@ using LINTelligent.Domain;
 
 namespace LINTelligent.Application.Services.Implementations;
 
-public class ReviewService(IReviewRepository reviewRepository, ILLMClient llmClient, INotificationService notificationService) : IReviewService
+public class ReviewService(IReviewRepository reviewRepository, ILLMClient llmClient, IGitHubClient gitHubClient, INotificationService notificationService) : IReviewService
 {
     public async Task<Guid> SubmitReviewRequestAsync(NewReviewRequestDto reviewRequest, CancellationToken ct)
     {
