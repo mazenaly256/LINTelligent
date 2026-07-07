@@ -1,4 +1,4 @@
-﻿namespace LINTelligent.Infrastructure.LLMClients.Implementations.Ollama.DTOs;
+﻿namespace LINTelligent.Infrastructure.Clients.Ollama.DTOs;
 
 public class OllamaRequest
 {

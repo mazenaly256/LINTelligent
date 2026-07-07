@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace LINTelligent.Application.DTOs;
+namespace LINTelligent.Application.Contracts.DTOs;
 
 public class CodeIssueDto
 {

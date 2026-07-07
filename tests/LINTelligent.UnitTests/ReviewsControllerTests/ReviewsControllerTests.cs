@@ -1,4 +1,4 @@
-﻿using LINTelligent.Application.DTOs;
+﻿using LINTelligent.Application.Contracts.DTOs;
 using LINTelligent.Application.Services.Interfaces;
 using LINTelligent.Presentation.Controllers;
 using Microsoft.AspNetCore.Mvc;
@@ -7,7 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace LINTelligent.UnitTests;
+namespace LINTelligent.UnitTests.ReviewsControllerTests;
 
 public class ReviewsControllerTests
 {
@@ -20,8 +20,9 @@ public class ReviewsControllerTests
         _reviewsController = new(_fakeReviewService.Object);
     }
 
+
     [Fact]
-    public async Task ReviewCodeSnippetAsync_WhenCodeSnippetLengthExceeds500Charaters_Returns400BadRequest()
+    public async Task ReviewCodeSnippetAsync_WhenBothGitHubUrlAndCodeSnippetExist_Returns400BadRequest()
     {
         // Arrange
 
@@ -30,12 +31,89 @@ public class ReviewsControllerTests
         // Act
         var result = await _reviewsController.ReviewCodeSnippetAsync(new()
         {
-            CodeSnippet = new string('a', 600)
+            CodeSnippet = new string('a', 600),
+            GitHubUserContentFileUrl = "github_file_url"
         }, CancellationToken.None);
 
 
         // Assert
-        Assert.IsType<BadRequestObjectResult>(result.Result);
+        Assert.IsType<BadRequestObjectResult>(result);
+    }
+
+
+    [Fact]
+    public async Task ReviewCodeSnippetAsync_WhenOnlyGitHubUrlExistsButInvalidUrl_Returns400BadRequest()
+    {
+        // Arrange
+
+
+
+        // Act
+        var result = await _reviewsController.ReviewCodeSnippetAsync(new()
+        {
+            GitHubUserContentFileUrl = "inval_id,UrL.abcde_qw"
+        }, CancellationToken.None);
+
+
+        // Assert
+        Assert.IsType<BadRequestObjectResult>(result);
+    }
+
+
+    [Fact]
+    public async Task ReviewCodeSnippetAsync_WhenOnlyGitHubUrlExistsButNotHTTPS_Returns400BadRequest()
+    {
+        // Arrange
+
+
+
+        // Act
+        var result = await _reviewsController.ReviewCodeSnippetAsync(new()
+        {
+            GitHubUserContentFileUrl = "http://evil.com"
+        }, CancellationToken.None);
+
+
+        // Assert
+        Assert.IsType<BadRequestObjectResult>(result);
+    }
+
+
+    [Fact]
+    public async Task ReviewCodeSnippetAsync_WhenOnlyGitHubUrlExistsAndHTTPSButNotGitHubUserContentUrl_Returns400BadRequest()
+    {
+        // Arrange
+
+
+
+        // Act
+        var result = await _reviewsController.ReviewCodeSnippetAsync(new()
+        {
+            GitHubUserContentFileUrl = "https://evil.com"
+        }, CancellationToken.None);
+
+
+        // Assert
+        Assert.IsType<BadRequestObjectResult>(result);
+    }
+
+
+    [Fact]
+    public async Task ReviewCodeSnippetAsync_WhenCodeSnippetLengthExceeds5000Charaters_Returns400BadRequest()
+    {
+        // Arrange
+
+
+
+        // Act
+        var result = await _reviewsController.ReviewCodeSnippetAsync(new()
+        {
+            CodeSnippet = new string('a', 6000)
+        }, CancellationToken.None);
+
+
+        // Assert
+        Assert.IsType<BadRequestObjectResult>(result);
     }
 
 
@@ -54,10 +132,10 @@ public class ReviewsControllerTests
 
 
         // Assert
-        _fakeReviewService.Verify(mock => mock.SubmitReviewRequestAsync(It.IsAny<NewReviewRequest>(), It.IsAny<CancellationToken>()),
+        _fakeReviewService.Verify(mock => mock.SubmitReviewRequestAsync(It.IsAny<NewReviewRequestDto>(), It.IsAny<CancellationToken>()),
             Times.Once);
 
-        Assert.IsType<AcceptedResult>(result.Result);
+        Assert.IsType<AcceptedResult>(result);
     }
 
 

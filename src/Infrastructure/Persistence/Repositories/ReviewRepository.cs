@@ -1,7 +1,7 @@
-﻿using LINTelligent.Domain;
-using LINTelligent.Infrastructure.Persistence.Repositories.Interfaces;
+﻿using LINTelligent.Application.Contracts.Interfaces;
+using LINTelligent.Domain;
 
-namespace LINTelligent.Infrastructure.Persistence.Repositories.Implementations;
+namespace LINTelligent.Infrastructure.Persistence.Repositories;
 
 public class ReviewRepository(AppDbContext context) : IReviewRepository
 {
@@ -11,6 +11,15 @@ public class ReviewRepository(AppDbContext context) : IReviewRepository
         await context.SaveChangesAsync(ct);
 
         return review.Id;
+    }
+
+    public async Task PersistCodeSnippetFromGitHub(Guid reviewId, string codeSnippet, CancellationToken ct)
+    {
+        var reviewFromDB = await context.Reviews.FindAsync(reviewId);
+
+        reviewFromDB.CodeSnippet = codeSnippet;
+
+        await context.SaveChangesAsync(ct);
     }
 
     public async Task AddReportToTheReviewAsync(Guid reviewId, string report, CancellationToken ct)

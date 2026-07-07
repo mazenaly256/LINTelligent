@@ -1,9 +1,9 @@
-﻿using LINTelligent.Infrastructure.DTOs;
-using LINTelligent.Infrastructure.LLMClients.Implementations.Ollama.DTOs;
-using LINTelligent.Infrastructure.LLMClients.Interfaces;
+﻿using LINTelligent.Application.Contracts.DTOs;
+using LINTelligent.Application.Contracts.Interfaces;
+using LINTelligent.Infrastructure.Clients.Ollama.DTOs;
 using System.Net.Http.Headers;
 
-namespace LINTelligent.Infrastructure.LLMClients.Implementations.Ollama;
+namespace LINTelligent.Infrastructure.Clients.Ollama;
 
 public class OllamaClient : ILLMClient
 {
@@ -26,7 +26,7 @@ public class OllamaClient : ILLMClient
         _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _apiKey);
     }
 
-    public async Task<LLMResponse> GetCodeReviewReportAsync(string language, string codeSnippet, CancellationToken ct)
+    public async Task<LLMResponseDto> GetCodeReviewReportAsync(string language, string codeSnippet, CancellationToken ct)
     {
         var ollamaRequest = new OllamaRequest       // One prompt, two sections identifying the Persona/Role and Task
         {
@@ -43,7 +43,7 @@ public class OllamaClient : ILLMClient
         httpResponse.EnsureSuccessStatusCode();
         var ollamaResponse = await httpResponse.Content.ReadFromJsonAsync<OllamaResponse>(ct);
 
-        LLMResponse llmReponse = new()
+        LLMResponseDto llmReponse = new()
         {
             CodeReviewReport = ollamaResponse.Message.Content,
             SuccessfulRequest = ollamaResponse.Done

@@ -1,74 +1,33 @@
-﻿using LINTelligent.Application.DTOs;
+﻿using Hangfire;
+using LINTelligent.Application.Contracts.DTOs;
+using LINTelligent.Application.Contracts.Interfaces;
 using LINTelligent.Application.Services.Implementations;
-using LINTelligent.Application.Services.Interfaces;
-using LINTelligent.Infrastructure.LLMClients.Interfaces;
-using LINTelligent.Infrastructure.Persistence.Repositories.Interfaces;
 using Moq;
 
-namespace LINTelligent.UnitTests;
+namespace LINTelligent.UnitTests.ReviewServiceTests;
 
-public class ReviewServiceTests
+public class CallLLMAndPersistReviewReportAsyncTests
 {
     private Mock<IReviewRepository> _fakeReviewRepository;
+    private Mock<IBackgroundJobClient> _fakeBackgroundJobClient;
     private Mock<ILLMClient> _fakeLLMClient;
+    private Mock<IGitHubClient> _fakeGitHubClient;
     private Mock<INotificationService> _fakeNotificationService;
     private ReviewService _reviewService;
 
-    public ReviewServiceTests()
+    public CallLLMAndPersistReviewReportAsyncTests()
     {
         _fakeReviewRepository = new();
+        _fakeBackgroundJobClient = new();
         _fakeLLMClient = new();
+        _fakeGitHubClient = new();
         _fakeNotificationService = new();
-        _reviewService = new(_fakeReviewRepository.Object, _fakeLLMClient.Object, _fakeNotificationService.Object);
+        _reviewService = new(_fakeReviewRepository.Object, _fakeBackgroundJobClient.Object, _fakeLLMClient.Object, _fakeGitHubClient.Object, _fakeNotificationService.Object);
     }
 
 
     [Fact]
-    public async Task RequestProcessingAsync_WhenCalled_ChangesStatusToProcessing()
-    {
-        // Arrange
-        _fakeReviewRepository.Setup(mock => mock.GetReviewByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new Domain.Review());
-
-        _fakeLLMClient.Setup(mock => mock.GetCodeReviewReportAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new Infrastructure.DTOs.LLMResponse());
-
-        // Act
-        await _reviewService.RequestProcessingAsync(new Guid(), "", "", "");
-
-
-        // Assert
-        _fakeReviewRepository.Verify(mock =>
-            mock.ChangeStatusAsync(It.IsAny<Guid>(), "Processing", It.IsAny<CancellationToken>()),
-            Times.Once);
-    }
-
-
-    [Fact]
-    public async Task RequestProcessingAsync_WhenCalled_ChangesStatusToCompletedOrFailed()
-    {
-        // Arrange
-        _fakeReviewRepository.Setup(mock => mock.GetReviewByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new Domain.Review());
-
-
-        _fakeLLMClient.Setup(mock => mock.GetCodeReviewReportAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new Infrastructure.DTOs.LLMResponse());
-
-
-        // Act
-        await _reviewService.RequestProcessingAsync(new Guid(), "", "", "");
-
-
-        // Assert
-        _fakeReviewRepository.Verify(mock =>
-            mock.ChangeStatusAsync(It.IsAny<Guid>(), It.Is<string>(status => status == "Completed" || status == "Failed"), It.IsAny<CancellationToken>()),
-            Times.Once);
-    }
-
-
-    [Fact]
-    public async Task RequestProcessingAsync_WhenCalled_ChangesStatusToProcessingBeforeToCompletedOrFailedInOrder()
+    public async Task CallLLMAndPersistReviewReportAsync_WhenCalled_ChangesStatusToProcessingBeforeToCompletedOrFailedInOrder()
     {
         // Arrange
         _fakeReviewRepository.Setup(mock => mock.GetReviewByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
@@ -84,11 +43,11 @@ public class ReviewServiceTests
             .Returns(Task.CompletedTask);
 
         _fakeLLMClient.Setup(mock => mock.GetCodeReviewReportAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new Infrastructure.DTOs.LLMResponse());
+            .ReturnsAsync(new LLMResponseDto());
 
 
         // Act
-        await _reviewService.RequestProcessingAsync(new Guid(), "", "", "");
+        await _reviewService.CallLLMAndPersistReviewReportAsync(new Guid(), CancellationToken.None);
 
 
         // Assert
@@ -100,18 +59,18 @@ public class ReviewServiceTests
 
 
     [Fact]
-    public async Task RequestProcessingAsync_WhenLLMReturnsTheReviewReport_SavesReportToDatabase()
+    public async Task CallLLMAndPersistReviewReportAsync_WhenLLMReturnsTheReviewReport_SavesReportToDatabase()
     {
         // Arrange
         _fakeReviewRepository.Setup(mock => mock.GetReviewByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new Domain.Review());
 
         _fakeLLMClient.Setup(mock => mock.GetCodeReviewReportAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new Infrastructure.DTOs.LLMResponse());
+            .ReturnsAsync(new LLMResponseDto());
 
 
         // Act
-        await _reviewService.RequestProcessingAsync(new Guid(), "", "", "");
+        await _reviewService.CallLLMAndPersistReviewReportAsync(new Guid(), CancellationToken.None);
 
 
         // Assert
@@ -121,11 +80,8 @@ public class ReviewServiceTests
     }
 
 
-    [Theory]
-    [InlineData(null)]
-    [InlineData("")]
-    [InlineData("   ")]
-    public async Task RequestProcessingAsync_WhenWebhookIsNullOrWhiteSpace_DoesNotSendNotification(string? webhookUrl)
+    [Fact]
+    public async Task CallLLMAndPersistReviewReportAsync_WhenCalled_ChangesStatusToCompletedOrFailed()
     {
         // Arrange
         _fakeReviewRepository.Setup(mock => mock.GetReviewByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
@@ -133,35 +89,87 @@ public class ReviewServiceTests
 
 
         _fakeLLMClient.Setup(mock => mock.GetCodeReviewReportAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new Infrastructure.DTOs.LLMResponse());
-       
+            .ReturnsAsync(new LLMResponseDto());
+
 
         // Act
-        await _reviewService.RequestProcessingAsync(new Guid(), "", "", webhookUrl);
+        await _reviewService.CallLLMAndPersistReviewReportAsync(new Guid(), CancellationToken.None);
+
+
+        // Assert
+        _fakeReviewRepository.Verify(mock =>
+            mock.ChangeStatusAsync(It.IsAny<Guid>(), It.Is<string>(status => status == "Completed" || status == "Failed"), It.IsAny<CancellationToken>()),
+            Times.Once);
+    }
+
+
+    [Fact]
+    public async Task CallLLMAndPersistReviewReportAsync_WhenCalled_ChangesStatusToProcessing()
+    {
+        // Arrange
+        _fakeReviewRepository.Setup(mock => mock.GetReviewByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new Domain.Review());
+
+        _fakeLLMClient.Setup(mock => mock.GetCodeReviewReportAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new LLMResponseDto());
+
+        // Act
+        await _reviewService.CallLLMAndPersistReviewReportAsync(new Guid(), CancellationToken.None);
+
+
+        // Assert
+        _fakeReviewRepository.Verify(mock =>
+            mock.ChangeStatusAsync(It.IsAny<Guid>(), "Processing", It.IsAny<CancellationToken>()),
+            Times.Once);
+    }
+
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("   ")]
+    public async Task CallLLMAndPersistReviewReportAsync_WhenWebhookIsNullOrWhiteSpace_DoesNotSendNotification(string? webhookUrl)
+    {
+        // Arrange
+        _fakeReviewRepository.Setup(mock => mock.GetReviewByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new Domain.Review()
+            {
+                WebhookUrl = webhookUrl
+            });
+
+
+        _fakeLLMClient.Setup(mock => mock.GetCodeReviewReportAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new LLMResponseDto());
+
+
+        // Act
+        await _reviewService.CallLLMAndPersistReviewReportAsync(new Guid(), CancellationToken.None);
 
 
         // Assert
         _fakeNotificationService.Verify(mock =>
             mock.SendAsync(It.IsAny<NotificationMessageDto?>()!, It.IsAny<Uri>(), It.IsAny<CancellationToken>()), 
             Times.Never);
-
     }
 
 
     [Fact]
-    public async Task RequestProcessingAsync_WhenWebhookIsValidUrl_SendNotification()
+    public async Task CallLLMAndPersistReviewReportAsync_WhenWebhookIsValidUrl_SendNotification()
     {
         // Arrange
         _fakeReviewRepository.Setup(mock => mock.GetReviewByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new Domain.Review());
+            .ReturnsAsync(new Domain.Review()
+            {
+                WebhookUrl = "https://webhook.site/8ad81a9b-098d-49f8-893b-e1351e362ad7"
+            });
 
 
         _fakeLLMClient.Setup(mock => mock.GetCodeReviewReportAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new Infrastructure.DTOs.LLMResponse());
-       
+            .ReturnsAsync(new LLMResponseDto());
+
 
         // Act
-        await _reviewService.RequestProcessingAsync(new Guid(), "", "", "https://webhook.site/8ad81a9b-098d-49f8-893b-e1351e362ad7");
+        await _reviewService.CallLLMAndPersistReviewReportAsync(new Guid(), CancellationToken.None);
 
 
         // Assert
@@ -172,62 +180,59 @@ public class ReviewServiceTests
 
 
     [Fact]
-    public async Task RequestProcessingAsync_WhenWebhookIsInvalidUrl_DoesNotSendNotification()
+    public async Task CallLLMAndPersistReviewReportAsync_WhenWebhookIsInvalidUrl_DoesNotSendNotification()
     {
         // Arrange
         _fakeReviewRepository.Setup(mock => mock.GetReviewByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new Domain.Review());
+            .ReturnsAsync(new Domain.Review()
+            {
+                WebhookUrl = "any_invalid_webhook_url"
+            });
 
 
         _fakeLLMClient.Setup(mock => mock.GetCodeReviewReportAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new Infrastructure.DTOs.LLMResponse());
+            .ReturnsAsync(new LLMResponseDto());
 
 
         // Act
-        await _reviewService.RequestProcessingAsync(new Guid(), "", "", "any_invalid_webhook");
+        await _reviewService.CallLLMAndPersistReviewReportAsync(Guid.NewGuid(), CancellationToken.None);
 
         // Assert
         _fakeNotificationService.Verify(mock =>
             mock.SendAsync(It.IsAny<NotificationMessageDto?>()!, It.IsAny<Uri>(), It.IsAny<CancellationToken>()),
             Times.Never);
+        // The catch block swallows the exception that happened due to to invalid Url
     }
 
 
     [Fact]
-    public async Task RequestProcessingAsync_WhenLLMClientReturnsNull_ThrowsNullReferenceExceptionAndChangesStatusToFailed()
+    public async Task CallLLMAndPersistReviewReportAsync_WhenLLMClientReturnsNull_ChangesStatusToFailed()
     {
         // Arrange
         _fakeReviewRepository.Setup(mock => mock.GetReviewByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new Domain.Review());
-
-
 
         // Setup without "ReturnsAsync" sets up the method to return default value for the retrun type (which is null here)
         _fakeLLMClient.Setup(mock => mock.GetCodeReviewReportAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()));
 
 
+        // Act
+        await _reviewService.CallLLMAndPersistReviewReportAsync(Guid.NewGuid(), CancellationToken.None);
 
-        // Act and Assert
-        await Assert.ThrowsAsync<NullReferenceException>(async () =>
-        {
-            await _reviewService.RequestProcessingAsync(new Guid(), "", "", null);
-        });
 
         // Assert
-        _fakeReviewRepository.Verify(frr =>
-            frr.ChangeStatusAsync(It.IsAny<Guid>(), "Failed", It.IsAny<CancellationToken>()),
+        _fakeReviewRepository.Verify(mock =>
+            mock.ChangeStatusAsync(It.IsAny<Guid>(), "Failed", It.IsAny<CancellationToken>()),
             Times.Once);
     }
 
 
     [Fact]
-    public async Task RequestProcessingAsync_WhenLLMClientThrowsHttpRequestException_ThrowsHttpRequestExceptionAndChangeStatusToFailed()
+    public async Task CallLLMAndPersistReviewReportAsync_WhenLLMClientThrowsHttpRequestException_ThrowsHttpRequestExceptionAndChangeStatusToFailed()
     {
         // Arrange
         _fakeReviewRepository.Setup(mock => mock.GetReviewByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new Domain.Review());
-
-
 
         _fakeLLMClient.Setup(mock => mock.GetCodeReviewReportAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .ThrowsAsync(new HttpRequestException());
@@ -236,18 +241,19 @@ public class ReviewServiceTests
         // Act and Assert
         await Assert.ThrowsAsync<HttpRequestException>(async () =>
         {
-            await _reviewService.RequestProcessingAsync(new Guid(), "", "", null);
+            await _reviewService.CallLLMAndPersistReviewReportAsync(Guid.NewGuid(), CancellationToken.None);        // due to rethrowing
         });
 
+
         // Assert
-        _fakeReviewRepository.Verify(frr =>
-            frr.ChangeStatusAsync(It.IsAny<Guid>(), "Failed", It.IsAny<CancellationToken>()),
+        _fakeReviewRepository.Verify(mock =>
+            mock.ChangeStatusAsync(It.IsAny<Guid>(), "Failed", It.IsAny<CancellationToken>()),
             Times.Once);
     }
 
 
     [Fact]
-    public async Task RequestProcessingAsync_WhenLLMRetrunsSuccessfulResponse_ChangesStatusToCompleted()
+    public async Task CallLLMAndPersistReviewReportAsync_WhenLLMRetrunsSuccessfully_ChangesStatusToCompleted()
     {
         // Arrange
         _fakeReviewRepository.Setup(mock => mock.GetReviewByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
@@ -255,45 +261,44 @@ public class ReviewServiceTests
 
 
         _fakeLLMClient.Setup(mock => mock.GetCodeReviewReportAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new Infrastructure.DTOs.LLMResponse()
+            .ReturnsAsync(new LLMResponseDto()
             {
                 SuccessfulRequest = true
             });
-       
+
 
         // Act
-        await _reviewService.RequestProcessingAsync(new Guid(), "", "", null);
+        await _reviewService.CallLLMAndPersistReviewReportAsync(Guid.NewGuid(), CancellationToken.None);
 
 
         // Assert
-        _fakeReviewRepository.Verify(frr =>
-            frr.ChangeStatusAsync(It.IsAny<Guid>(), "Completed", It.IsAny<CancellationToken>()),
+        _fakeReviewRepository.Verify(mock =>
+            mock.ChangeStatusAsync(It.IsAny<Guid>(), "Completed", It.IsAny<CancellationToken>()),
             Times.Once);
     }
 
 
     [Fact]
-    public async Task RequestProcessingAsync_WhenLLMRetrunsFailedResponse_ChangesStatusToFailed()
+    public async Task CallLLMAndPersistReviewReportAsync_WhenLLMRetrunsFailed_ChangesStatusToFailed()
     {
         // Arrange
         _fakeReviewRepository.Setup(mock => mock.GetReviewByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new Domain.Review());
 
         _fakeLLMClient.Setup(mock => mock.GetCodeReviewReportAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new Infrastructure.DTOs.LLMResponse()
+            .ReturnsAsync(new LLMResponseDto()
             {
                 SuccessfulRequest = false
             });
 
 
         // Act
-        await _reviewService.RequestProcessingAsync(new Guid(), "", "", null);
+        await _reviewService.CallLLMAndPersistReviewReportAsync(Guid.NewGuid(), CancellationToken.None);
 
 
         // Assert
-        _fakeReviewRepository.Verify(frr =>
-            frr.ChangeStatusAsync(It.IsAny<Guid>(), "Failed", It.IsAny<CancellationToken>()),
+        _fakeReviewRepository.Verify(mock =>
+            mock.ChangeStatusAsync(It.IsAny<Guid>(), "Failed", It.IsAny<CancellationToken>()),
             Times.Once);
-
     }
 }

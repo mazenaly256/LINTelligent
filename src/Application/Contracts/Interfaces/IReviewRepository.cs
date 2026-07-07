@@ -1,6 +1,6 @@
 ﻿using LINTelligent.Domain;
 
-namespace LINTelligent.Infrastructure.Persistence.Repositories.Interfaces;
+namespace LINTelligent.Application.Contracts.Interfaces;
 
 public interface IReviewRepository
 {
@@ -9,6 +9,8 @@ public interface IReviewRepository
     public Task ChangeStatusAsync(Guid reviewId, string newStatus, CancellationToken ct);
 
     public Task AddReportToTheReviewAsync(Guid reviewId, string report, CancellationToken ct);
+
+    public Task PersistCodeSnippetFromGitHub(Guid reviewId, string codeSnippet, CancellationToken ct);
 
     public Task<Review?> GetReviewByIdAsync(Guid reviewId, CancellationToken ct);
 }

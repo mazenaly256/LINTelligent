@@ -1,5 +1,5 @@
-﻿using LINTelligent.Application.DTOs;
-using LINTelligent.Application.Services.Interfaces;
+﻿using LINTelligent.Application.Contracts.DTOs;
+using LINTelligent.Application.Contracts.Interfaces;
 
 namespace LINTelligent.Infrastructure.Services;
 
