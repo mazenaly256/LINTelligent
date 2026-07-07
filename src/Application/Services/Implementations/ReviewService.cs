@@ -13,7 +13,7 @@ public class ReviewService(IReviewRepository reviewRepository, IBackgroundJobCli
         Review newReview = new()
         {
             Language = reviewRequest.Language,
-            CodeSnippet = reviewRequest.CodeSnippet,
+            CodeSnippet = string.IsNullOrWhiteSpace(reviewRequest.CodeSnippet) ? "Fetching from GitHub....." : reviewRequest.CodeSnippet,
             Status = "Pending",
             WebhookUrl = reviewRequest.WebhookUrl,
             Report = null
