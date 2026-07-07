@@ -6,7 +6,7 @@ using LINTelligent.Domain;
 
 namespace LINTelligent.Application.Services.Implementations;
 
-public class ReviewService(IReviewRepository reviewRepository, ILLMClient llmClient, IGitHubClient gitHubClient, INotificationService notificationService) : IReviewService
+public class ReviewService(IReviewRepository reviewRepository, IBackgroundJobClient backgroundJobClient, ILLMClient llmClient, IGitHubClient gitHubClient, INotificationService notificationService) : IReviewService
 {
     public async Task<Guid> SubmitReviewRequestAsync(NewReviewRequestDto reviewRequest, CancellationToken ct)
     {
@@ -23,16 +23,15 @@ public class ReviewService(IReviewRepository reviewRepository, ILLMClient llmCli
 
         if (string.IsNullOrWhiteSpace(reviewRequest.GitHubContentUrl))
         {
-            // Once the endpoint call finishes, the framework marks the cancellation token so any thread that uses it will be a canceled operation and when the token is used again when the worker executes the job, it will directly throw OperationCanceledException
-            // So that, never send the cancellation token to the be saved as a parameter for an async job.
-            BackgroundJob.Enqueue<IReviewService>(rs => rs.CallLLMAndPersistReviewReportAsync(newReviewId, CancellationToken.None));
+            // Hangfire always add its own cancellation token, whatever the sent value
+            backgroundJobClient.Enqueue<IReviewService>(rs => rs.CallLLMAndPersistReviewReportAsync(newReviewId, CancellationToken.None));
         }
 
         else
         {
-            var fetchedCodeSnippet = BackgroundJob.Enqueue<IReviewService>(rs => rs.FetchAndPersistTheCodeSnippetFromGitHubAsync(newReviewId, reviewRequest.GitHubContentUrl, CancellationToken.None));
+            var fetchedCodeSnippet = backgroundJobClient.Enqueue<IReviewService>(rs => rs.FetchAndPersistTheCodeSnippetFromGitHubAsync(newReviewId, reviewRequest.GitHubContentUrl, CancellationToken.None));
 
-            BackgroundJob.ContinueJobWith<IReviewService>(fetchedCodeSnippet, rs => rs.CallLLMAndPersistReviewReportAsync(newReviewId, CancellationToken.None));
+            backgroundJobClient.ContinueJobWith<IReviewService>(fetchedCodeSnippet, rs => rs.CallLLMAndPersistReviewReportAsync(newReviewId, CancellationToken.None));
         }
         
 
@@ -72,9 +71,9 @@ public class ReviewService(IReviewRepository reviewRepository, ILLMClient llmCli
 
             var llmResponse = await llmClient.GetCodeReviewReportAsync(reviewFromDB.Language, reviewFromDB.CodeSnippet, ct);
 
-            await reviewRepository.AddReportToTheReviewAsync(reviewId, llmResponse.CodeReviewReport, ct);
+            await reviewRepository.AddReportToTheReviewAsync(reviewId, llmResponse?.CodeReviewReport!, ct);
 
-            await reviewRepository.ChangeStatusAsync(reviewId, llmResponse.SuccessfulRequest ? "Completed" : "Failed", ct);
+            await reviewRepository.ChangeStatusAsync(reviewId, llmResponse is null || !llmResponse.SuccessfulRequest ? "Failed" : "Completed", ct);
 
             // Notifying the user
             try
