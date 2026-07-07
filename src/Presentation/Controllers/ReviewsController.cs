@@ -1,6 +1,5 @@
 ﻿using LINTelligent.Application.Contracts.DTOs;
 using LINTelligent.Application.Services.Interfaces;
-using LINTelligent.Domain;
 using LINTelligent.Presentation.DTOs.Request;
 using LINTelligent.Presentation.DTOs.Response;
 using Microsoft.AspNetCore.Mvc;

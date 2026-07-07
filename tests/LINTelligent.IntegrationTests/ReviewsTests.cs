@@ -2,7 +2,6 @@
 using LINTelligent.Presentation.DTOs.Request;
 using System.Net;
 using System.Net.Http.Json;
-using System.Reflection.PortableExecutable;
 
 namespace LINTelligent.IntegrationTests;
 
@@ -62,7 +61,7 @@ public class ReviewsTests : IClassFixture<CustomWebApplicationFactory>
     public async Task GetReviewByIdAsync_WhenReviewIdExists_Returns200Ok()
     {
         // Arrange
-        var request = new CodeReviewRequestDto()        // Language is considered as mandatory, due to ApiController attribute auto-validates the model (ApiController filter)
+        var request = new CodeReviewRequestDto()
         {
             CodeSnippet = "console.log('hello')",
             Language = "JS"
