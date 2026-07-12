@@ -32,7 +32,7 @@ public class ReviewTools(IHttpClientFactory httpClientFactory)
             var requestBody = new
             {
                 CodeSnippet = codeSnippet,
-                GitHubFileUrl = gitHubUserContentFileUrl,
+                GitHubUserContentFileUrl = gitHubUserContentFileUrl,
                 Language = language,
                 WebhookUrl = webhookUrl
             };
@@ -40,7 +40,7 @@ public class ReviewTools(IHttpClientFactory httpClientFactory)
             var response = await _httpClient.PostAsJsonAsync("/reviews", requestBody, ct);
             response.EnsureSuccessStatusCode();
 
-            var newReviewId = Guid.Parse(response.Headers.Location!.Segments[^1]);
+            var newReviewId = Guid.Parse(response.Headers.Location!.ToString().Split('/').Last());
 
             return newReviewId;
         }
