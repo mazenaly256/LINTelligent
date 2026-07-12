@@ -12,7 +12,7 @@ public class ReviewTools(IHttpClientFactory httpClientFactory)
 
     [McpServerTool]
     [Description("Submits a code snippet for review. Returns the new reviewId immediately (review process runs as a backgroud job). If you received a Guid and not null from this method, you MUST call GetReviewDetails with the returned Guid reviewId after 3 to 5 seconds to retrieve the result.")]
-    public async Task<Guid?> SubmitReviewRequest(
+    public async Task<dynamic?> SubmitReviewRequest(
         [Description("The code snippet to review, as a raw string. Mutually exclusive with gitHubUserContentFileUrl, either give value here or as gitHubUserContentFileUrl. Never both, never neither.")]
         string? codeSnippet,
 
@@ -38,7 +38,11 @@ public class ReviewTools(IHttpClientFactory httpClientFactory)
             };
 
             var response = await _httpClient.PostAsJsonAsync("/reviews", requestBody, ct);
-            response.EnsureSuccessStatusCode();
+
+            if (!response.IsSuccessStatusCode)
+            {
+                return await response.Content.ReadAsStringAsync(ct);
+            }
 
             var newReviewId = Guid.Parse(response.Headers.Location!.ToString().Split('/').Last());
 
@@ -46,7 +50,7 @@ public class ReviewTools(IHttpClientFactory httpClientFactory)
         }
         catch
         {
-            return null;
+            return "Error while trying to submit review request and retreive new review ID.";
         }
         
     }
@@ -71,7 +75,7 @@ public class ReviewTools(IHttpClientFactory httpClientFactory)
         }
         catch
         {
-            return null;
+            return "Error while trying to get review details by Review ID.";
         }
     }
 }
