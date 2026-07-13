@@ -8,22 +8,24 @@ _AI-integrated backend service for code linting (ie. analyzing code for issues).
 
 ## Overview
 
-When a _linting request_ reaches the system, LINTelligent service saves its details in the database then enqueues a background job for handling the request in a _job queue_ then immediately returns **202 Accepted** response to the client.
+A code snippet is submitted in a linting/reviewing request, either as a direct snippet in the request body or via a public GitHub file URL.
 
-After that, a worker picks up the job from the job queue and processes it, it calls the configured LLM provider with the request details, then updates the review record with the structured LLM response (review result).
+Once the linting request reaches the system, _LINTelligent_ saves its details in the database and enqueues a background job to the job queue for handling this request, then immediately returns 202 Accepted. If a GitHub URL was provided, the code is first fetched, then the review job runs, otherwise the review job runs directly on the submitted code snippet.
 
-Once the review result is saved, the service notifies the client _by sending the completed review to their registered webhook URL_.
+After that, a worker picks up the job from the job queue and processes it, it fetches the code from the GitHub URL (if exists) then it calls the configured LLM provider with the request details and receive the review report of issues, then updates the review record with the report of linting.
 
-#### Basic system architecture diagram
+Once the process of linting is finished, the service notifies the client _by sending review to their registered webhook URL (if exists)_.
+
+### Basic system architecture diagram
+Note: this diagram is a high-level overview of the core review pipeline, not a full detailed flow. Auxiliary steps (like fetching code from an external source) are omitted for clarity, and data flow is represented directly between source and destination.
 
 ![System Architecture Diagram](LINTelligent.Api/docs/system-architecture-diagram.png)
 
 ---
 
 ## Getting Started
-
-- You need a webhook url, if you want to get notified once the code linting is finished, you can create one online and send it with the request
-- Go to [Swagger Interface](https://lintelligent-production.up.railway.app/swagger/index.html) to test the API and try the functionality
+- If you want to get notified once the code linting is finished, you can create a _webhook URL_ online and include it in the request body
+- Go to [Swagger Interface](https://lintelligent-production.up.railway.app/swagger/index.html) to test the API and try the functionality. Use a public GitHub raw file URL (`https://raw.githubusercontent.com/{owner}/{repo}/{branch}/{path-to-file}`) or a direct code snippet in the request body.
 
 ---
 
