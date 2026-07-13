@@ -56,7 +56,7 @@ public class SubmitReviewRequestAsyncTests
             Times.Once);
 
         _fakeBackgroundJobClient.Verify(mock =>
-            mock.Create(It.IsAny<Job>(), It.Is<AwaitingState>(state => state.ParentId == fetchingCodeSnippetJobId)),
+            mock.Create(It.IsAny<Job>(), It.Is<AwaitingState>(state => state.ParentId == fetchingCodeSnippetJobId && state.Options == JobContinuationOptions.OnlyOnSucceededState)),
             Times.Once);
     }
 

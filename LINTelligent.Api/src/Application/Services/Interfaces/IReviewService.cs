@@ -11,6 +11,7 @@ public interface IReviewService
     [AutomaticRetry(Attempts = 3, DelaysInSeconds = new[] { 5, 10, 30 })]
     public Task CallLLMAndPersistReviewReportAsync(Guid reviewId, CancellationToken ct);
 
+    [AutomaticRetry(Attempts = 1, DelaysInSeconds = new[] { 5 })]
     public Task FetchAndPersistTheCodeSnippetFromGitHubAsync(Guid reviewId, string gitHubUserContentUrl, CancellationToken ct);
 
     public Task<Review?> GetReviewDetailsAsync(Guid reviewId, CancellationToken ct);
