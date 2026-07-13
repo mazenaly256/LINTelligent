@@ -6,14 +6,14 @@ on:
       - dev
       - main
     paths:
-      - "src/**"
-      - "tests/**"
+      - "LINTelligent.Api/src/**"
+      - "LINTelligent.Api/tests/**"
   pull_request:
     branches:
       - main
     paths:
-      - "src/**"
-      - "tests/**"
+      - "LINTelligent.Api/src/**"
+      - "LINTelligent.Api/tests/**"
 
 jobs:
   build-and-test:
@@ -29,12 +29,11 @@ jobs:
 
       - name: Restore and Build
         run: |
-          dotnet restore
-          dotnet build --no-restore --configuration Release
+          dotnet restore LINTelligent.Api/LINTelligent.slnx
+          dotnet build LINTelligent.Api/LINTelligent.slnx --no-restore --configuration Release
 
       - name: Run Unit Tests
-        run: dotnet test tests/LINTelligent.UnitTests/LINTelligent.UnitTests.csproj --no-build --configuration Release
+        run: dotnet test LINTelligent.Api/tests/LINTelligent.UnitTests/LINTelligent.UnitTests.csproj --no-build --configuration Release
 
       - name: Run Integration Tests
-        run: dotnet test tests/LINTelligent.IntegrationTests/LINTelligent.IntegrationTests.csproj --no-build --configuration Release
-
+        run: dotnet test LINTelligent.Api/tests/LINTelligent.IntegrationTests/LINTelligent.IntegrationTests.csproj --no-build --configuration Release
