@@ -31,7 +31,7 @@ public class ReviewService(IReviewRepository reviewRepository, IBackgroundJobCli
         {
             var fetchedCodeSnippet = backgroundJobClient.Enqueue<IReviewService>(rs => rs.FetchAndPersistTheCodeSnippetFromGitHubAsync(newReviewId, reviewRequest.GitHubContentUrl, CancellationToken.None));
 
-            backgroundJobClient.ContinueJobWith<IReviewService>(fetchedCodeSnippet, rs => rs.CallLLMAndPersistReviewReportAsync(newReviewId, CancellationToken.None));
+            backgroundJobClient.ContinueJobWith<IReviewService>(fetchedCodeSnippet, rs => rs.CallLLMAndPersistReviewReportAsync(newReviewId, CancellationToken.None), JobContinuationOptions.OnlyOnSucceededState);
         }
         
 
@@ -49,14 +49,24 @@ public class ReviewService(IReviewRepository reviewRepository, IBackgroundJobCli
 
             if (codeSnippet.Length > 5000)
             {
-                throw new ArgumentException();      // stop the execution of this job and dependent jobs.
+                throw new ArgumentException();
             }
 
             await reviewRepository.PersistCodeSnippetFromGitHub(reviewId, codeSnippet, ct);
         }
+        catch (ArgumentException)
+        {
+            await reviewRepository.ChangeStatusAsync(reviewId, "Failed", ct);
+            await reviewRepository.PersistCodeSnippetFromGitHub(reviewId, "Too long code snippet, exceeds the maximum allowed characters.", ct);
+
+            throw;      // to rethrow the exception, so if retries are exhausted, then the job marked as failed and the dependent job will not be executed
+        }
         catch
         {
             await reviewRepository.ChangeStatusAsync(reviewId, "Failed", ct);
+            await reviewRepository.PersistCodeSnippetFromGitHub(reviewId, "Error while fetching the code from GitHub.", ct);
+
+            throw;
         }
     }
 
