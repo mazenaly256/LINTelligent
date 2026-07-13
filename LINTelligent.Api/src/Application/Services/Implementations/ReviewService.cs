@@ -31,6 +31,7 @@ public class ReviewService(IReviewRepository reviewRepository, IBackgroundJobCli
         {
             var fetchedCodeSnippet = backgroundJobClient.Enqueue<IReviewService>(rs => rs.FetchAndPersistTheCodeSnippetFromGitHubAsync(newReviewId, reviewRequest.GitHubContentUrl, CancellationToken.None));
 
+            // Run this continuation job only if the previous job (fetching from GitHub) reaches the SucceededState (did not thorw exception)
             backgroundJobClient.ContinueJobWith<IReviewService>(fetchedCodeSnippet, rs => rs.CallLLMAndPersistReviewReportAsync(newReviewId, CancellationToken.None), JobContinuationOptions.OnlyOnSucceededState);
         }
         

@@ -1,5 +1,6 @@
 ﻿using FluentAssertions;
 using LINTelligent.Presentation.DTOs.Request;
+using LINTelligent.Presentation.DTOs.Response;
 using System.Net;
 using System.Net.Http.Json;
 
@@ -54,6 +55,46 @@ public class ReviewsTests : IClassFixture<CustomWebApplicationFactory>
 
         //Assert
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+
+    [Fact]
+    public async Task ReviewCodeSnippetAsync_WhenGitHabRawFileCodeSnippetExceeds5000Characters_PersistsReviewStatusAsFailed()
+    {
+        // Arrange
+        var request = new CodeReviewRequestDto()
+        {
+            GitHubUserContentFileUrl = "https://raw.githubusercontent.com/mazenaly256/Cinema-Seat-Reservation-System/refs/heads/main/services/reservation-service/src/Services/Implementations/ReservationService.cs",
+            Language = "C#"
+        };
+
+        using var responsePostRequest = await _httpClient.PostAsJsonAsync("/reviews", request);
+        var newReviewLocation = responsePostRequest.Headers.Location;
+
+
+        // Act
+        var timeout = TimeSpan.FromSeconds(10);
+        var start = DateTime.UtcNow;
+        bool statusAssertedAsFailed = false;
+
+        while (DateTime.UtcNow - start < timeout)
+        {
+            using var response = await _httpClient.GetAsync(newReviewLocation);
+
+            var review = await response.Content.ReadFromJsonAsync<CodeReviewResponseDto>();
+
+            if (review?.Status == "Failed")
+            {
+                statusAssertedAsFailed = true;
+                break;
+            }
+
+            await Task.Delay(2000);
+        }
+
+
+        //Assert
+        statusAssertedAsFailed.Should().Be(true);
     }
 
 

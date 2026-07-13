@@ -58,13 +58,20 @@ public class FetchAndPersistTheCodeSnippetFromGitHubAsyncTests
         _fakeGitHubClient.Setup(mock => mock.FetchCodeSnippetFromUrlAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .ThrowsAsync(new HttpRequestException());
 
-        // Act
-        await _reviewService.FetchAndPersistTheCodeSnippetFromGitHubAsync(new Guid(), "", CancellationToken.None);
+        var fakeReviewId = Guid.NewGuid();
 
+        // Act & Assert
+        await Assert.ThrowsAsync<HttpRequestException>(async () =>
+        {
+            await _reviewService.FetchAndPersistTheCodeSnippetFromGitHubAsync(fakeReviewId, "", CancellationToken.None);        // due to rethrowing
+        });
 
-        // Assert
         _fakeReviewRepository.Verify(mock =>
-            mock.ChangeStatusAsync(It.IsAny<Guid>(), "Failed", It.IsAny<CancellationToken>()),
+            mock.ChangeStatusAsync(fakeReviewId, "Failed", It.IsAny<CancellationToken>()),
+            Times.Once);
+
+        _fakeReviewRepository.Verify(mock =>
+            mock.PersistCodeSnippetFromGitHub(fakeReviewId, It.IsAny<string>(), It.IsAny<CancellationToken>()),
             Times.Once);
     }
 }
