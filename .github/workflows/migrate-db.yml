@@ -14,9 +14,13 @@ jobs:
         with:
           dotnet-version: 10.0.x
 
+      - name: Restore
+        working-directory: LINTelligent.Api/src
+        run: dotnet restore
+        
       - name: Install EF Core tool
         run: dotnet tool install --global dotnet-ef
 
       - name: Apply migrations to production
         working-directory: LINTelligent.Api/src
-        run: dotnet ef database update --connection "${{ secrets.PROD_DB_CONNECTION }}"
+        run: dotnet ef database update --connection "${{ secrets.PROD_DB_CONNECTION_STRING }}"
